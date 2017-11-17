@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг» [![Build status][travis-image]][travis-url]
 
 * Студент: [Михаил Овчинников](https://up.htmlacademy.ru/javascript/11/user/53350).
-* Наставник: `Неизвестно`.
+* Наставник: [Федотов Александр](https://htmlacademy.ru/profile/id247015).
 
 ---
 
