@@ -219,14 +219,14 @@
     return mapPinEl;
   }
 
-  function getAd(userId, titleId) {
+  function getAd(userId, titleIndex) {
     var location = getLocation();
     return {
       author: {
         avatar: getUserAvatarUrl(userId)
       },
       offer: {
-        title: getTitle(titleId),
+        title: getTitle(titleIndex),
         address: getAddress(location),
         price: getPrice(),
         type: getType(),
