@@ -159,11 +159,10 @@
   }
 
   function getUserAvatarUrl(userId) {
-    userId = parseInt(userId, 10);
     if (isNaN(userId) || userId < MIN_USER_ID || userId > MAX_USER_ID) {
       return null;
     }
-    userId = userId < 10 ? '0' + userId.toString() : userId.toString();
+    userId = userId < 10 ? '0' + userId : userId;
     return 'img/avatars/user' + userId + '.png';
   }
 
