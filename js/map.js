@@ -187,20 +187,11 @@
   function getFeatures() {
     var features = [];
     var featuresCount = getRandomIntBetween(0, FEATURES.length);
-    var featureIndices = [];
-    var featureIndex;
-    while (featureIndices.length < featuresCount) {
-      featureIndex = getRandomIntBetween(0, FEATURES.length - 1);
-      if (featureIndices.indexOf(featureIndex) === -1) {
-        featureIndices[featureIndices.length] = featureIndex;
-      }
+    var featuresIndexRange = getRange(0, featuresCount - 1);
+    for (var i = 0; i < featuresCount; i++) {
+      features[i] = FEATURES[pullRandomElement(featuresIndexRange)];
     }
-    featureIndices.sort();
-    for (var i = 0; i < featureIndices.length; i++) {
-      featureIndex = featureIndices[i];
-      features[features.length] = FEATURES[featureIndex];
-    }
-    return features;
+    return features.sort();
   }
 
   function getDescription() {
