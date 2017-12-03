@@ -75,7 +75,7 @@
   function renderMapPins(ads) {
     var mapPins = [];
     for (var i = 0; i < ads.length; i++) {
-      mapPins[mapPins.length] = initMapPinEl(createMapPinEl(), ads[i]);
+      mapPins[i] = initMapPinEl(createMapPinEl(), ads[i]);
     }
     drawMapPins(mapPins);
   }
@@ -247,9 +247,7 @@
     var titleIndexRange = getRange(0, count - 1);
     var ads = [];
     for (var i = 0; i < count; i++) {
-      var titleIndex = pullRandomElement(titleIndexRange);
-      var userId = pullRandomElement(userIdRange);
-      ads[ads.length] = getAd(userId, titleIndex);
+      ads[i] = getAd(pullRandomElement(userIdRange), pullRandomElement(titleIndexRange));
     }
     return ads;
   }
