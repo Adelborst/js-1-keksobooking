@@ -64,33 +64,49 @@
   var MIN_LOCATION_Y = 100;
   var MAX_LOCATION_Y = 500;
 
-  renderMap(generateAds(ADS_COUNT));
+  var templateEl = document.querySelector('template').content;
+  var mapEl = document.querySelector('.map');
+  var mapFiltersContainerEl = mapEl.querySelector('.map__filters-container');
+  var mapPinsEl = mapEl.querySelector('.map__pins');
 
-  function renderMap(ads) {
-    getMapEl().classList.remove('map--faded');
-    renderMapPins(ads);
-    renderMapCard(ads[0]);
+  mapEl.classList.remove('map--faded');
+
+  renderAds({
+    map: mapEl,
+    mapFiltersContainer: mapFiltersContainerEl,
+    mapPins: mapPinsEl,
+    template: templateEl,
+  }, generateAds(ADS_COUNT));
+
+  function renderAds(els, ads) {
+    var mapPins = createMapPinsEls(els.template, ads);
+    renderMapPins(els.mapPins, mapPins);
+    var mapCard = createMapCardEl(els.template, ads[0]);
+    renderMapCard(els.mapFiltersContainer, mapCard);
   }
 
-  function renderMapPins(ads) {
+  function createMapPinsEls(template, ads) {
     var mapPins = [];
     for (var i = 0; i < ads.length; i++) {
-      mapPins[i] = initMapPinEl(createMapPinEl(), ads[i]);
+      mapPins[i] = initMapPinEl(cloneMapPinEl(template), ads[i]);
     }
-    drawMapPins(mapPins);
+    return mapPins;
   }
 
-  function renderMapCard(ad) {
-    var mapCardEl = initMapCard(createMapCardEl(), ad);
-    getMapFiltersEl().insertAdjacentElement('beforebegin', mapCardEl);
+  function createMapCardEl(template, ad) {
+    return initMapCardEl(cloneMapCardEl(template), ad);
   }
 
-  function createMapCardEl() {
-    var mapCard = getTemplateEl().querySelector('article.map__card');
+  function renderMapCard(nextSibling, mapCard) {
+    nextSibling.insertAdjacentElement('beforebegin', mapCard);
+  }
+
+  function cloneMapCardEl(template) {
+    var mapCard = template.querySelector('article.map__card');
     return mapCard.cloneNode(true);
   }
 
-  function initMapCard(mapCardEl, ad) {
+  function initMapCardEl(mapCardEl, ad) {
     mapCardEl.querySelector('.popup__avatar').setAttribute('src', ad.author.avatar);
     mapCardEl.querySelector('h3').textContent = ad.offer.title;
     mapCardEl.querySelector('p small').textContent = ad.offer.address;
@@ -117,28 +133,12 @@
     return featuresListEl;
   }
 
-  function drawMapPins(mapPins) {
+  function renderMapPins(container, mapPins) {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < mapPins.length; i++) {
       fragment.appendChild(mapPins[i]);
     }
-    getMapPinsEl().appendChild(fragment);
-  }
-
-  function getMapEl() {
-    return document.querySelector('.map');
-  }
-
-  function getMapFiltersEl() {
-    return document.querySelector('.map .map__filters-container');
-  }
-
-  function getTemplateEl() {
-    return document.querySelector('template').content;
-  }
-
-  function getMapPinsEl() {
-    return document.querySelector('.map__pins');
+    container.appendChild(fragment);
   }
 
   function getRandomIntBetween(min, max) {
@@ -216,21 +216,21 @@
     return [];
   }
 
-  function createMapPinEl() {
-    var mapPinTemplate = getTemplateEl().querySelector('.map__pin');
+  function cloneMapPinEl(template) {
+    var mapPinTemplate = template.querySelector('.map__pin');
     return mapPinTemplate.cloneNode(true);
   }
 
-  function initMapPinEl(mapPinEl, ad) {
-    var avatarImg = mapPinEl.querySelector('img');
+  function initMapPinEl(mapPin, ad) {
+    var avatarImg = mapPin.querySelector('img');
     // Taking into account the size of the element
     // so that the map pin will point to the actual location
     var x = ad.location.x - 23;
     var y = ad.location.y - 46 - 18;
-    mapPinEl.style.left = x + 'px';
-    mapPinEl.style.top = y + 'px';
+    mapPin.style.left = x + 'px';
+    mapPin.style.top = y + 'px';
     avatarImg.setAttribute('src', ad.author.avatar);
-    return mapPinEl;
+    return mapPin;
   }
 
   function getAd(userId, titleIndex) {
