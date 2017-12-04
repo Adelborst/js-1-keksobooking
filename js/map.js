@@ -276,6 +276,6 @@
 
   function pullRandomElement(arr) {
     var index = getRandomIntBetween(0, arr.length - 1);
-    return arr.splice(index, 1);
+    return arr.splice(index, 1)[0];
   }
 })();
