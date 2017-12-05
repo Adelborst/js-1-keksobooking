@@ -66,13 +66,115 @@
   var MIN_LOCATION_Y = 100;
   var MAX_LOCATION_Y = 500;
 
+  // «Лачуга» — минимальная цена 0
+  // «Квартира» — минимальная цена 1000
+  // «Дом» — минимальная цена 5000
+  // «Дворец» — минимальная цена 10000
+  var TYPE_MIN_PRICE_MAP = {
+    'bungalo': 0,
+    'flat': 1000,
+    'house': 5000,
+    'palace': 10000
+  };
+
+  // 1 комната — «для одного гостя»
+  // 2 комнаты — «для 2-х или 1-го гостя»
+  // 3 комнаты — «для 2-х, 1-го или 3-х гостей»
+  // 100 комнат — «не для гостей»
+  var ROOM_NUMBER_TO_CAPACITY_MAP = {
+    1: [1],
+    2: [2, 1],
+    3: [2, 1, 3],
+    100: [0]
+  };
+
   var templateEl = document.querySelector('template').content;
   var mapEl = document.querySelector('.map');
   var mapFiltersContainerEl = mapEl.querySelector('.map__filters-container');
   var mapPinsEl = mapEl.querySelector('.map__pins');
-
   var mapPinMainEl = mapEl.querySelector('.map__pin--main');
+
+  // notice form
   var noticeFormEl = document.querySelector('.notice__form');
+  var timeInEl = document.querySelector('#timein');
+  var timeOutEl = document.querySelector('#timeout');
+  var typeEl = document.querySelector('#type');
+  var priceEl = document.querySelector('#price');
+  var roomNumberEl = document.querySelector('#room_number');
+  var capacityEl = document.querySelector('#capacity');
+
+  initUserInteractionScenarios({
+    noticeForm: noticeFormEl,
+    timeIn: timeInEl,
+    timeOut: timeOutEl,
+    type: typeEl,
+    price: priceEl,
+    roomNumber: roomNumberEl,
+    capacity: capacityEl,
+  });
+
+  function initUserInteractionScenarios(els) {
+    initSyncTimeInAndTimeOut(els.timeIn, els.timeOut);
+    initSyncTypeWithMinPrice(els.type, els.price);
+    initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity);
+    initNotifyOnInvalidInput(els.noticeForm);
+
+    function initNotifyOnInvalidInput(form) {
+      var inputEls = form.querySelectorAll('input, select, textarea');
+      for (var i = 0; i < inputEls.length; i++) {
+        inputEls[i].addEventListener('invalid', onInvalid);
+      }
+
+      function onInvalid(evt) {
+        evt.target.style.borderColor = 'red';
+      }
+    }
+
+    function initSyncRoomNumberWithCapacity(roomNumber, capacity) {
+      initCapacityEl(ROOM_NUMBER_TO_CAPACITY_MAP[roomNumber.value]);
+
+      roomNumber.addEventListener('change', function (evt) {
+        var capacityOptions = ROOM_NUMBER_TO_CAPACITY_MAP[evt.target.value];
+        initCapacityEl(capacityOptions);
+      });
+
+      function initCapacityEl(capacityOptions) {
+        for (var i = 0; i < capacity.childElementCount; i++) {
+          var enabled = capacityOptions.indexOf(parseInt(capacity.children[i].value, 10)) !== -1;
+          if (enabled) {
+            capacity.children[i].removeAttribute('disabled');
+          } else {
+            capacity.children[i].setAttribute('disabled', '');
+          }
+        }
+        var selectedOption = capacity.querySelector('option[selected]');
+        // automatically select a different enabled option if current option is disabled
+        if (selectedOption && selectedOption.hasAttribute('disabled')) {
+          selectedOption.removeAttribute('selected');
+          var enabledOption = capacity.querySelector('option:not([disabled])');
+          if (enabledOption) {
+            enabledOption.setAttribute('selected', '');
+          }
+        }
+      }
+    }
+
+    function initSyncTypeWithMinPrice(type, price) {
+
+      type.addEventListener('change', function (evt) {
+        price.setAttribute('min', TYPE_MIN_PRICE_MAP[evt.target.value]);
+      });
+    }
+
+    function initSyncTimeInAndTimeOut(timeIn, timeOut) {
+      timeIn.addEventListener('change', onChange);
+      timeOut.addEventListener('change', onChange);
+
+      function onChange(evt) {
+        timeOut.value = timeIn.value = evt.target.value;
+      }
+    }
+  }
 
   init({
     template: templateEl,
