@@ -91,10 +91,9 @@
   var templateEl = document.querySelector('template').content;
   var mapEl = document.querySelector('.map');
   var mapFiltersContainerEl = mapEl.querySelector('.map__filters-container');
-  var mapPinsEl = mapEl.querySelector('.map__pins');
+  var mapPinsContainerEl = mapEl.querySelector('.map__pins');
   var mapPinMainEl = mapEl.querySelector('.map__pin--main');
 
-  // notice form
   var noticeFormEl = document.querySelector('.notice__form');
   var timeInEl = document.querySelector('#timein');
   var timeOutEl = document.querySelector('#timeout');
@@ -176,12 +175,14 @@
     }
   }
 
+  var createMapCardEl = mapCardElFunc(templateEl);
+
   init({
     template: templateEl,
     map: mapEl,
     mapFiltersContainer: mapFiltersContainerEl,
     mapPinMain: mapPinMainEl,
-    mapPins: mapPinsEl,
+    mapPinsContainer: mapPinsContainerEl,
     noticeForm: noticeFormEl
   }, generateAds(ADS_COUNT));
 
@@ -196,54 +197,72 @@
       var mapPins = [];
       for (var i = 0; i < ads.length; i++) {
         mapPins[i] = initMapPinEl(cloneMapPinEl(els.template), ads[i]);
-        initActivateOnClick(mapPins[i]);
-        initShowMapCardOnClick(els, mapPins[i], ads[i]);
       }
-      renderMapPins(els.mapPins, mapPins);
+      els.mapPinsContainer.addEventListener('click', onMapPinsContainerClick);
+      renderMapPins(els.mapPinsContainer, mapPins);
 
       els.mapPinMain.removeEventListener('mouseup', onMapPinMainDrop);
     }
+
+    function onMapPinsContainerClick(evt) {
+      var mapPin = evt.target.closest('.map__pin');
+      // ignore clicks on elements other than regular map pins
+      if (!mapPin || mapPin.classList.contains('map__pin--main')) {
+        return;
+      }
+      var ad = ads[mapPin.dataset.id];
+      makeMapPinActive(evt.currentTarget, mapPin);
+      showAdMapCard({
+        map: els.map,
+        mapFiltersContainer: els.mapFiltersContainer
+      }, ad);
+    }
   }
 
-  function initActivateOnClick(mapPin) {
-    mapPin.addEventListener('click', function () {
-      var activeMapPin = mapPin.parentElement.querySelector('.map__pin--active');
-      if (activeMapPin) {
-        activeMapPin.classList.remove('map__pin--active');
-      }
-      mapPin.classList.add('map__pin--active');
-    });
+  function makeMapPinActive(mapPinsContainer, mapPin) {
+    var activeMapPin = mapPinsContainer.querySelector('.map__pin--active');
+    if (activeMapPin) {
+      activeMapPin.classList.remove('map__pin--active');
+    }
+    mapPin.classList.add('map__pin--active');
   }
 
-  function initShowMapCardOnClick(els, mapPin, ad) {
-    mapPin.addEventListener('click', function () {
-      var mapCard = els.map.querySelector('.map__card');
-      if (mapCard) {
-        mapCard.parentElement.removeChild(mapCard);
-        document.removeEventListener('keydown', onEscClick);
-      }
-      mapCard = initMapCardEl(cloneMapCardEl(els.template), ad);
-      mapCard.querySelector('.popup__close').addEventListener('click', closeMapCard);
-      document.addEventListener('keydown', onEscClick);
-      els.mapFiltersContainer.insertAdjacentElement('beforebegin', mapCard);
+  function mapCardElFunc(template) {
+    return function (ad) {
+      return initMapCardEl(cloneMapCardEl(template), ad);
+    };
+  }
 
-      function closeMapCard() {
-        if (mapCard.parentElement) {
-          var activeMapPin = mapCard.parentElement.querySelector('.map__pin--active');
-          if (activeMapPin) {
-            activeMapPin.classList.remove('map__pin--active');
-          }
-          mapCard.parentElement.removeChild(mapCard);
-        }
-        mapCard.querySelector('.popup__close').removeEventListener('click', closeMapCard);
-      }
+  function showAdMapCard(els, ad) {
+    var mapCard = els.map.querySelector('.map__card');
+    if (mapCard) {
+      mapCard.parentElement.removeChild(mapCard);
+      document.removeEventListener('keydown', onEscClick);
+    }
+    mapCard = createMapCardEl(ad);
+    document.addEventListener('keydown', onEscClick);
+    els.mapFiltersContainer.insertAdjacentElement('beforebegin', mapCard);
+  }
 
-      function onEscClick(evt) {
-        if (evt.keyCode === ESC_KEYCODE) {
-          closeMapCard();
-        }
-      }
-    });
+  function onCloseMapCard(evt) {
+    var mapCard = evt.target.closest('.map__card');
+    closeMapCard(mapCard);
+    mapCard.querySelector('.popup__close').removeEventListener('click', onCloseMapCard);
+  }
+
+  function closeMapCard(mapCard) {
+    var activeMapPin = mapCard.parentElement.querySelector('.map__pin--active');
+    if (activeMapPin) {
+      activeMapPin.classList.remove('map__pin--active');
+    }
+    mapCard.parentElement.removeChild(mapCard);
+  }
+
+  function onEscClick(evt) {
+    if (evt.keyCode === ESC_KEYCODE) {
+      var mapCard = document.querySelector('.map__card');
+      closeMapCard(mapCard);
+    }
   }
 
   function cloneMapCardEl(template) {
@@ -262,6 +281,10 @@
     var featuresListEl = mapCardEl.querySelector('.popup__features');
     initFeaturesListEl(featuresListEl, ad.offer.features);
     mapCardEl.querySelector('.popup__features + p').textContent = ad.offer.description;
+    var closeBtn = mapCardEl.querySelector('.popup__close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', onCloseMapCard);
+    }
     return mapCardEl;
   }
 
@@ -286,21 +309,64 @@
     container.appendChild(fragment);
   }
 
-  function getRandomIntBetween(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+  function cloneMapPinEl(template) {
+    var mapPinTemplate = template.querySelector('.map__pin');
+    return mapPinTemplate.cloneNode(true);
   }
 
-  function getLocation() {
+  function initMapPinEl(mapPin, ad) {
+    var avatarImg = mapPin.querySelector('img');
+    // Taking into account the size of the element
+    // so that the map pin will point to the actual location
+    var x = ad.location.x - 23;
+    var y = ad.location.y - 46 - 18;
+    mapPin.style.left = x + 'px';
+    mapPin.style.top = y + 'px';
+    avatarImg.setAttribute('src', ad.author.avatar);
+    mapPin.dataset.id = ad.id;
+    return mapPin;
+  }
+
+  // ad generation
+  function generateAds(count) {
+    var userIdRange = getRange(1, count);
+    var titleIndexRange = getRange(0, count - 1);
+    var ads = [];
+    for (var i = 0; i < count; i++) {
+      ads[i] = generateAd(i, pullRandomElement(userIdRange), pullRandomElement(titleIndexRange));
+    }
+    return ads;
+  }
+
+  function generateAd(id, userId, titleIndex) {
+    var location = generateLocation();
+    return {
+      id: id,
+      author: {
+        avatar: getUserAvatarUrl(userId)
+      },
+      offer: {
+        title: getTitle(titleIndex),
+        address: getAddress(location),
+        price: generatePrice(),
+        type: generateType(),
+        rooms: generateRoomsCount(),
+        guests: generateGuestsCount(),
+        checkin: generateCheckinTime(),
+        checkout: generateCheckoutTime(),
+        features: generateFeatures(),
+        description: getDescription(),
+        photos: getPhotos(),
+      },
+      location: location,
+    };
+  }
+
+  function generateLocation() {
     return {
       x: getRandomIntBetween(MIN_LOCATION_X, MAX_LOCATION_X),
       y: getRandomIntBetween(MIN_LOCATION_Y, MAX_LOCATION_Y)
     };
-  }
-
-  function getRandomElement(arr) {
-    return arr[getRandomIntBetween(0, arr.length - 1)];
   }
 
   function getUserAvatarUrl(userId) {
@@ -315,7 +381,7 @@
     return location.x + ', ' + location.y;
   }
 
-  function getPrice() {
+  function generatePrice() {
     return getRandomIntBetween(MIN_PRICE, MAX_PRICE);
   }
 
@@ -323,27 +389,27 @@
     return TITLES[titleIndex];
   }
 
-  function getRoomsCount() {
+  function generateRoomsCount() {
     return getRandomIntBetween(MIN_ROOMS_COUNT, MAX_ROOMS_COUNT);
   }
 
-  function getGuestsCount() {
+  function generateGuestsCount() {
     return getRandomIntBetween(MIN_GUESTS_COUNT, MAX_GUESTS_COUNT);
   }
 
-  function getCheckinTime() {
+  function generateCheckinTime() {
     return getRandomElement(CHECKIN_TIMES);
   }
 
-  function getCheckoutTime() {
+  function generateCheckoutTime() {
     return getRandomElement(CHECKOUT_TIMES);
   }
 
-  function getType() {
+  function generateType() {
     return getRandomElement(TYPES);
   }
 
-  function getFeatures() {
+  function generateFeatures() {
     var features = [];
     var featuresCount = getRandomIntBetween(0, FEATURES.length);
     var featuresIndexRange = getRange(0, featuresCount - 1);
@@ -361,54 +427,9 @@
     return [];
   }
 
-  function cloneMapPinEl(template) {
-    var mapPinTemplate = template.querySelector('.map__pin');
-    return mapPinTemplate.cloneNode(true);
-  }
-
-  function initMapPinEl(mapPin, ad) {
-    var avatarImg = mapPin.querySelector('img');
-    // Taking into account the size of the element
-    // so that the map pin will point to the actual location
-    var x = ad.location.x - 23;
-    var y = ad.location.y - 46 - 18;
-    mapPin.style.left = x + 'px';
-    mapPin.style.top = y + 'px';
-    avatarImg.setAttribute('src', ad.author.avatar);
-    return mapPin;
-  }
-
-  function getAd(userId, titleIndex) {
-    var location = getLocation();
-    return {
-      author: {
-        avatar: getUserAvatarUrl(userId)
-      },
-      offer: {
-        title: getTitle(titleIndex),
-        address: getAddress(location),
-        price: getPrice(),
-        type: getType(),
-        rooms: getRoomsCount(),
-        guests: getGuestsCount(),
-        checkin: getCheckinTime(),
-        checkout: getCheckoutTime(),
-        features: getFeatures(),
-        description: getDescription(),
-        photos: getPhotos(),
-      },
-      location: location,
-    };
-  }
-
-  function generateAds(count) {
-    var userIdRange = getRange(1, count);
-    var titleIndexRange = getRange(0, count - 1);
-    var ads = [];
-    for (var i = 0; i < count; i++) {
-      ads[i] = getAd(pullRandomElement(userIdRange), pullRandomElement(titleIndexRange));
-    }
-    return ads;
+  // utils
+  function getRandomElement(arr) {
+    return arr[getRandomIntBetween(0, arr.length - 1)];
   }
 
   function getRange(start, end) {
@@ -422,5 +443,11 @@
   function pullRandomElement(arr) {
     var index = getRandomIntBetween(0, arr.length - 1);
     return arr.splice(index, 1)[0];
+  }
+
+  function getRandomIntBetween(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 })();
