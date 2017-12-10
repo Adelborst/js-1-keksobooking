@@ -13,17 +13,15 @@
     var mapCard = els.map.querySelector('.map__card');
     if (mapCard) {
       mapCard.parentElement.removeChild(mapCard);
-      document.removeEventListener('keydown', onEscClick);
     }
     mapCard = initMapCardEl(els.template.cloneNode(true), ad);
     document.addEventListener('keydown', onEscClick);
     els.mapFiltersContainer.insertAdjacentElement('beforebegin', mapCard);
   };
 
-  function onCloseMapCard(evt) {
+  function onClickCloseMapCard(evt) {
     var mapCard = evt.target.closest('.map__card');
     closeMapCard(mapCard);
-    evt.target.removeEventListener('click', onCloseMapCard);
   }
 
   function closeMapCard(mapCard) {
@@ -32,6 +30,12 @@
       activeMapPin.classList.remove('map__pin--active');
     }
     mapCard.parentElement.removeChild(mapCard);
+    mapCard.removeEventListener('click', onClickCloseMapCard);
+    var closeBtn = mapCard.querySelector('.popup__close');
+    if (closeBtn) {
+      closeBtn.removeEventListener('click', onClickCloseMapCard);
+    }
+    document.removeEventListener('keydown', onEscClick);
   }
 
   function onEscClick(evt) {
@@ -54,7 +58,7 @@
     mapCardEl.querySelector('.popup__features + p').textContent = ad.offer.description;
     var closeBtn = mapCardEl.querySelector('.popup__close');
     if (closeBtn) {
-      closeBtn.addEventListener('click', onCloseMapCard);
+      closeBtn.addEventListener('click', onClickCloseMapCard);
     }
     return mapCardEl;
   }
