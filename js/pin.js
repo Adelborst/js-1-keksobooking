@@ -1,22 +1,81 @@
 'use strict';
 
 (function () {
+  var isInitialized = false;
   window.initMapPins = function (els, ads) {
-    els.mapPinMain.addEventListener('mouseup', onMapPinMainDrop);
+    els.mapPinMain.addEventListener('mousedown', onMouseDown);
 
-    function onMapPinMainDrop() {
+    function onMouseDown(evt) {
+      evt.preventDefault();
+      var target = evt.target.closest('.map__pin--main');
+      var initialCoords = {
+        x: target.clientX,
+        y: target.clientY
+      };
+      var targetCoords = {
+        x: initialCoords.x,
+        y: initialCoords.y,
+      };
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+
+      function onMouseMove(moveEvt) {
+        moveEvt.preventDefault();
+        var shift = {
+          x: initialCoords.x - moveEvt.clientX,
+          y: initialCoords.y - moveEvt.clientY,
+        };
+
+        initialCoords = {
+          x: moveEvt.clientX,
+          y: moveEvt.clientY
+        };
+
+        targetCoords = {
+          x: target.offsetLeft - shift.x,
+          y: target.offsetTop - shift.y
+        };
+
+        target.style.left = targetCoords.x + 'px';
+        target.style.top = targetCoords.y + 'px';
+      }
+
+      function onMouseUp(mouseUpEvt) {
+        mouseUpEvt.preventDefault();
+        init();
+        updateForm(els.noticeForm, targetCoords);
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+
+      function updateForm(form, coords) {
+        // Координаты X и Y - это не координаты левого верхнего угла блока метки,
+        // а координаты, на которые указывает метка своим острым концом.
+        // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
+        var x = coords.x + 62 / 2 + 10 / 2;
+        var y = coords.y + 62 + 22;
+        var addressInput = form.querySelector('#address');
+        if (addressInput) {
+          addressInput.value = 'x: ' + x + ', y: ' + y;
+        }
+      }
+    }
+
+    function init() {
+      if (isInitialized) {
+        return;
+      }
       els.map.classList.remove('map--faded');
       els.noticeForm.classList.remove('notice__form--disabled');
       els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
+      els.mapPinsContainer.addEventListener('click', onMapPinsContainerClick);
 
       var mapPins = [];
       for (var i = 0; i < ads.length; i++) {
         mapPins[i] = initMapPinEl(cloneMapPinEl(els.template), ads[i]);
       }
-      els.mapPinsContainer.addEventListener('click', onMapPinsContainerClick);
       renderMapPins(els.mapPinsContainer, mapPins);
-
-      els.mapPinMain.removeEventListener('mouseup', onMapPinMainDrop);
+      isInitialized = true;
     }
 
     function onMapPinsContainerClick(evt) {
