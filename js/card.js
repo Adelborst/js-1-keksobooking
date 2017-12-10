@@ -35,7 +35,7 @@
     if (closeBtn) {
       closeBtn.removeEventListener('click', onClickCloseMapCard);
     }
-    mapCard.removeEventListener('keydown', onEscClick);
+    document.removeEventListener('keydown', onEscClick);
   }
 
   function onEscClick(evt) {
