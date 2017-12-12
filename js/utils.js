@@ -24,10 +24,23 @@
     return arr.splice(index, 1)[0];
   }
 
+  function getBoundedValue(value, min, max) {
+    if (min > max) {
+      return null;
+    }
+    if (min != null && value < min) {
+      value = min;
+    } else if (max != null && value > max) {
+      value = max;
+    }
+    return value;
+  }
+
   window.utils = {
     getRandomIntBetween: getRandomIntBetween,
     getRandomElement: getRandomElement,
     getRange: getRange,
-    pullRandomElement: pullRandomElement
+    pullRandomElement: pullRandomElement,
+    getBoundedValue: getBoundedValue
   };
 })();

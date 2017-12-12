@@ -2,6 +2,7 @@
 
 (function () {
   var isInitialized = false;
+
   window.initMapPins = function (els, ads) {
     els.mapPinMain.addEventListener('mousedown', onMouseDown);
 
@@ -31,10 +32,7 @@
           y: moveEvt.clientY
         };
 
-        targetCoords = {
-          x: target.offsetLeft - shift.x,
-          y: target.offsetTop - shift.y
-        };
+        targetCoords = getTargetCoords(target, shift);
 
         target.style.left = targetCoords.x + 'px';
         target.style.top = targetCoords.y + 'px';
@@ -94,6 +92,15 @@
     }
   };
 
+  function getTargetCoords(target, shift) {
+    var parentRect = target.parentElement.getBoundingClientRect();
+    var result = {
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, parentRect.width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, parentRect.height)
+    }
+    return result;
+  }
+
   function cloneMapPinEl(template) {
     var mapPinTemplate = template.querySelector('.map__pin');
     return mapPinTemplate.cloneNode(true);
@@ -103,7 +110,7 @@
     var avatarImg = mapPin.querySelector('img');
     // Taking into account the size of the element
     // so that the map pin will point to the actual location
-    var x = ad.location.x - 23;
+    var x = ad.location.x - 46 / 2;
     var y = ad.location.y - 46 - 18;
     mapPin.style.left = x + 'px';
     mapPin.style.top = y + 'px';
