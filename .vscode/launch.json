@@ -8,8 +8,8 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "file:///Users/deilan/Dev/53350-keksobooking/index.html",
-            "webRoot": "${workspaceRoot}/index.js"
+            "url": "file:///${workspaceRoot}/index.html",
+            "webRoot": "${workspaceRoot}"
         }
     ]
 }
