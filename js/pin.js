@@ -10,8 +10,8 @@
       evt.preventDefault();
       var target = evt.target.closest('.map__pin--main');
       var initialCoords = {
-        x: target.clientX,
-        y: target.clientY
+        x: evt.clientX,
+        y: evt.clientY
       };
       var targetCoords = {
         x: initialCoords.x,
