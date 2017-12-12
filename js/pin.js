@@ -97,7 +97,7 @@
     var result = {
       x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, parentRect.width),
       y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, parentRect.height)
-    }
+    };
     return result;
   }
 

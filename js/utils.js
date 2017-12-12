@@ -28,9 +28,9 @@
     if (min > max) {
       return null;
     }
-    if (min != null && value < min) {
+    if (typeof min !== 'undefined' && min !== null && value < min) {
       value = min;
-    } else if (max != null && value > max) {
+    } else if (typeof max !== 'undefined' && max !== null && value > max) {
       value = max;
     }
     return value;
