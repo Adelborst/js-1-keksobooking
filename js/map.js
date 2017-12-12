@@ -1,6 +1,8 @@
 'use strict';
 
 (function () {
+  var ESC_KEYCODE = 27;
+
   var ADS_COUNT = 8;
 
   var MIN_USER_ID = 1;
@@ -64,33 +66,110 @@
   var MIN_LOCATION_Y = 100;
   var MAX_LOCATION_Y = 500;
 
-  renderMap(generateAds(ADS_COUNT));
+  var templateEl = document.querySelector('template').content;
+  var mapEl = document.querySelector('.map');
+  var mapFiltersContainerEl = mapEl.querySelector('.map__filters-container');
+  var mapPinsContainerEl = mapEl.querySelector('.map__pins');
+  var mapPinMainEl = mapEl.querySelector('.map__pin--main');
 
-  function renderMap(ads) {
-    getMapEl().classList.remove('map--faded');
-    renderMapPins(ads);
-    renderMapCard(ads[0]);
-  }
+  var noticeFormEl = document.querySelector('.notice__form');
 
-  function renderMapPins(ads) {
-    var mapPins = [];
-    for (var i = 0; i < ads.length; i++) {
-      mapPins[i] = initMapPinEl(createMapPinEl(), ads[i]);
+  var createMapCardEl = mapCardElFunc(templateEl);
+
+  init({
+    template: templateEl,
+    map: mapEl,
+    mapFiltersContainer: mapFiltersContainerEl,
+    mapPinMain: mapPinMainEl,
+    mapPinsContainer: mapPinsContainerEl,
+    noticeForm: noticeFormEl
+  }, generateAds(ADS_COUNT));
+
+  function init(els, ads) {
+    els.mapPinMain.addEventListener('mouseup', onMapPinMainDrop);
+
+    function onMapPinMainDrop() {
+      els.map.classList.remove('map--faded');
+      els.noticeForm.classList.remove('notice__form--disabled');
+      els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
+
+      var mapPins = [];
+      for (var i = 0; i < ads.length; i++) {
+        mapPins[i] = initMapPinEl(cloneMapPinEl(els.template), ads[i]);
+      }
+      els.mapPinsContainer.addEventListener('click', onMapPinsContainerClick);
+      renderMapPins(els.mapPinsContainer, mapPins);
+
+      els.mapPinMain.removeEventListener('mouseup', onMapPinMainDrop);
     }
-    drawMapPins(mapPins);
+
+    function onMapPinsContainerClick(evt) {
+      var mapPin = evt.target.closest('.map__pin');
+      // ignore clicks on elements other than regular map pins
+      if (!mapPin || mapPin.classList.contains('map__pin--main')) {
+        return;
+      }
+      var ad = ads[mapPin.dataset.id];
+      makeMapPinActive(evt.currentTarget, mapPin);
+      showAdMapCard({
+        map: els.map,
+        mapFiltersContainer: els.mapFiltersContainer
+      }, ad);
+    }
   }
 
-  function renderMapCard(ad) {
-    var mapCardEl = initMapCard(createMapCardEl(), ad);
-    getMapFiltersEl().insertAdjacentElement('beforebegin', mapCardEl);
+  function makeMapPinActive(mapPinsContainer, mapPin) {
+    var activeMapPin = mapPinsContainer.querySelector('.map__pin--active');
+    if (activeMapPin) {
+      activeMapPin.classList.remove('map__pin--active');
+    }
+    mapPin.classList.add('map__pin--active');
   }
 
-  function createMapCardEl() {
-    var mapCard = getTemplateEl().querySelector('article.map__card');
+  function mapCardElFunc(template) {
+    return function (ad) {
+      return initMapCardEl(cloneMapCardEl(template), ad);
+    };
+  }
+
+  function showAdMapCard(els, ad) {
+    var mapCard = els.map.querySelector('.map__card');
+    if (mapCard) {
+      mapCard.parentElement.removeChild(mapCard);
+      document.removeEventListener('keydown', onEscClick);
+    }
+    mapCard = createMapCardEl(ad);
+    document.addEventListener('keydown', onEscClick);
+    els.mapFiltersContainer.insertAdjacentElement('beforebegin', mapCard);
+  }
+
+  function onCloseMapCard(evt) {
+    var mapCard = evt.target.closest('.map__card');
+    closeMapCard(mapCard);
+    mapCard.querySelector('.popup__close').removeEventListener('click', onCloseMapCard);
+  }
+
+  function closeMapCard(mapCard) {
+    var activeMapPin = mapCard.parentElement.querySelector('.map__pin--active');
+    if (activeMapPin) {
+      activeMapPin.classList.remove('map__pin--active');
+    }
+    mapCard.parentElement.removeChild(mapCard);
+  }
+
+  function onEscClick(evt) {
+    if (evt.keyCode === ESC_KEYCODE) {
+      var mapCard = document.querySelector('.map__card');
+      closeMapCard(mapCard);
+    }
+  }
+
+  function cloneMapCardEl(template) {
+    var mapCard = template.querySelector('article.map__card');
     return mapCard.cloneNode(true);
   }
 
-  function initMapCard(mapCardEl, ad) {
+  function initMapCardEl(mapCardEl, ad) {
     mapCardEl.querySelector('.popup__avatar').setAttribute('src', ad.author.avatar);
     mapCardEl.querySelector('h3').textContent = ad.offer.title;
     mapCardEl.querySelector('p small').textContent = ad.offer.address;
@@ -101,6 +180,10 @@
     var featuresListEl = mapCardEl.querySelector('.popup__features');
     initFeaturesListEl(featuresListEl, ad.offer.features);
     mapCardEl.querySelector('.popup__features + p').textContent = ad.offer.description;
+    var closeBtn = mapCardEl.querySelector('.popup__close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', onCloseMapCard);
+    }
     return mapCardEl;
   }
 
@@ -117,45 +200,72 @@
     return featuresListEl;
   }
 
-  function drawMapPins(mapPins) {
+  function renderMapPins(container, mapPins) {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < mapPins.length; i++) {
       fragment.appendChild(mapPins[i]);
     }
-    getMapPinsEl().appendChild(fragment);
+    container.appendChild(fragment);
   }
 
-  function getMapEl() {
-    return document.querySelector('.map');
+  function cloneMapPinEl(template) {
+    var mapPinTemplate = template.querySelector('.map__pin');
+    return mapPinTemplate.cloneNode(true);
   }
 
-  function getMapFiltersEl() {
-    return document.querySelector('.map .map__filters-container');
+  function initMapPinEl(mapPin, ad) {
+    var avatarImg = mapPin.querySelector('img');
+    // Taking into account the size of the element
+    // so that the map pin will point to the actual location
+    var x = ad.location.x - 23;
+    var y = ad.location.y - 46 - 18;
+    mapPin.style.left = x + 'px';
+    mapPin.style.top = y + 'px';
+    avatarImg.setAttribute('src', ad.author.avatar);
+    mapPin.dataset.id = ad.id;
+    return mapPin;
   }
 
-  function getTemplateEl() {
-    return document.querySelector('template').content;
+  // ad generation
+  function generateAds(count) {
+    var userIdRange = getRange(1, count);
+    var titleIndexRange = getRange(0, count - 1);
+    var ads = [];
+    for (var i = 0; i < count; i++) {
+      ads[i] = generateAd(i, pullRandomElement(userIdRange), pullRandomElement(titleIndexRange));
+    }
+    return ads;
   }
 
-  function getMapPinsEl() {
-    return document.querySelector('.map__pins');
+  function generateAd(id, userId, titleIndex) {
+    var location = generateLocation();
+    return {
+      id: id,
+      author: {
+        avatar: getUserAvatarUrl(userId)
+      },
+      offer: {
+        title: getTitle(titleIndex),
+        address: getAddress(location),
+        price: generatePrice(),
+        type: generateType(),
+        rooms: generateRoomsCount(),
+        guests: generateGuestsCount(),
+        checkin: generateCheckinTime(),
+        checkout: generateCheckoutTime(),
+        features: generateFeatures(),
+        description: getDescription(),
+        photos: getPhotos(),
+      },
+      location: location,
+    };
   }
 
-  function getRandomIntBetween(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  function getLocation() {
+  function generateLocation() {
     return {
       x: getRandomIntBetween(MIN_LOCATION_X, MAX_LOCATION_X),
       y: getRandomIntBetween(MIN_LOCATION_Y, MAX_LOCATION_Y)
     };
-  }
-
-  function getRandomElement(arr) {
-    return arr[getRandomIntBetween(0, arr.length - 1)];
   }
 
   function getUserAvatarUrl(userId) {
@@ -170,7 +280,7 @@
     return location.x + ', ' + location.y;
   }
 
-  function getPrice() {
+  function generatePrice() {
     return getRandomIntBetween(MIN_PRICE, MAX_PRICE);
   }
 
@@ -178,27 +288,27 @@
     return TITLES[titleIndex];
   }
 
-  function getRoomsCount() {
+  function generateRoomsCount() {
     return getRandomIntBetween(MIN_ROOMS_COUNT, MAX_ROOMS_COUNT);
   }
 
-  function getGuestsCount() {
+  function generateGuestsCount() {
     return getRandomIntBetween(MIN_GUESTS_COUNT, MAX_GUESTS_COUNT);
   }
 
-  function getCheckinTime() {
+  function generateCheckinTime() {
     return getRandomElement(CHECKIN_TIMES);
   }
 
-  function getCheckoutTime() {
+  function generateCheckoutTime() {
     return getRandomElement(CHECKOUT_TIMES);
   }
 
-  function getType() {
+  function generateType() {
     return getRandomElement(TYPES);
   }
 
-  function getFeatures() {
+  function generateFeatures() {
     var features = [];
     var featuresCount = getRandomIntBetween(0, FEATURES.length);
     var featuresIndexRange = getRange(0, featuresCount - 1);
@@ -216,54 +326,9 @@
     return [];
   }
 
-  function createMapPinEl() {
-    var mapPinTemplate = getTemplateEl().querySelector('.map__pin');
-    return mapPinTemplate.cloneNode(true);
-  }
-
-  function initMapPinEl(mapPinEl, ad) {
-    var avatarImg = mapPinEl.querySelector('img');
-    // Taking into account the size of the element
-    // so that the map pin will point to the actual location
-    var x = ad.location.x - 23;
-    var y = ad.location.y - 46 - 18;
-    mapPinEl.style.left = x + 'px';
-    mapPinEl.style.top = y + 'px';
-    avatarImg.setAttribute('src', ad.author.avatar);
-    return mapPinEl;
-  }
-
-  function getAd(userId, titleIndex) {
-    var location = getLocation();
-    return {
-      author: {
-        avatar: getUserAvatarUrl(userId)
-      },
-      offer: {
-        title: getTitle(titleIndex),
-        address: getAddress(location),
-        price: getPrice(),
-        type: getType(),
-        rooms: getRoomsCount(),
-        guests: getGuestsCount(),
-        checkin: getCheckinTime(),
-        checkout: getCheckoutTime(),
-        features: getFeatures(),
-        description: getDescription(),
-        photos: getPhotos(),
-      },
-      location: location,
-    };
-  }
-
-  function generateAds(count) {
-    var userIdRange = getRange(1, count);
-    var titleIndexRange = getRange(0, count - 1);
-    var ads = [];
-    for (var i = 0; i < count; i++) {
-      ads[i] = getAd(pullRandomElement(userIdRange), pullRandomElement(titleIndexRange));
-    }
-    return ads;
+  // utils
+  function getRandomElement(arr) {
+    return arr[getRandomIntBetween(0, arr.length - 1)];
   }
 
   function getRange(start, end) {
@@ -276,6 +341,12 @@
 
   function pullRandomElement(arr) {
     var index = getRandomIntBetween(0, arr.length - 1);
-    return arr.splice(index, 1);
+    return arr.splice(index, 1)[0];
+  }
+
+  function getRandomIntBetween(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 })();
