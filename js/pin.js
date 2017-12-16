@@ -4,79 +4,95 @@
   var isInitialized = false;
 
   window.initMapPins = function (els, ads) {
-    els.mapPinMain.addEventListener('mousedown', onMouseDown);
+    var dragContext = {
+      els: els,
+      ads: ads,
+      target: null,
+      initialCoords: null,
+      targetCoords: null
+    };
+    dragContext.onMouseDown = onMouseDownFactory(dragContext);
+    dragContext.onMouseMove = onMouseMoveFactory(dragContext);
+    dragContext.onMouseUp = onMouseUpFactory(dragContext);
+    var initOnMouseUp = initOnMouseUpFactory(els, ads);
+    els.mapPinMain.addEventListener('mousedown', dragContext.onMouseDown);
+    els.map.addEventListener('mouseup', initOnMouseUp);
+  };
 
-    function onMouseDown(evt) {
+  function onMouseDownFactory(dragContext) {
+    return function (evt) {
       evt.preventDefault();
-      var target = evt.target.closest('.map__pin--main');
-      var initialCoords = {
+      dragContext.target = evt.target.closest('.map__pin--main');
+      dragContext.initialCoords = {
         x: evt.clientX,
         y: evt.clientY
       };
-      var targetCoords = {
-        x: initialCoords.x,
-        y: initialCoords.y,
+      dragContext.targetCoords = {
+        x: evt.clientX,
+        y: evt.clientY
       };
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener('mousemove', dragContext.onMouseMove);
+      document.addEventListener('mouseup', dragContext.onMouseUp);
+    };
+  }
 
-      function onMouseMove(moveEvt) {
-        moveEvt.preventDefault();
-        var shift = {
-          x: initialCoords.x - moveEvt.clientX,
-          y: initialCoords.y - moveEvt.clientY,
-        };
+  function onMouseMoveFactory(dragContext) {
+    return function (evt) {
+      evt.preventDefault();
+      var shift = {
+        x: dragContext.initialCoords.x - evt.clientX,
+        y: dragContext.initialCoords.y - evt.clientY,
+      };
 
-        initialCoords = {
-          x: moveEvt.clientX,
-          y: moveEvt.clientY
-        };
+      dragContext.initialCoords = {
+        x: evt.clientX,
+        y: evt.clientY
+      };
 
-        targetCoords = getTargetCoords(target, shift);
+      dragContext.targetCoords = getTargetCoords(dragContext.target, shift);
 
-        target.style.left = targetCoords.x + 'px';
-        target.style.top = targetCoords.y + 'px';
-      }
+      dragContext.target.style.left = dragContext.targetCoords.x + 'px';
+      dragContext.target.style.top = dragContext.targetCoords.y + 'px';
+    };
+  }
 
-      function onMouseUp(mouseUpEvt) {
-        mouseUpEvt.preventDefault();
-        init();
-        updateForm(els.noticeForm, targetCoords);
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      }
+  function onMouseUpFactory(dragContext) {
+    return function (evt) {
+      evt.preventDefault();
+      updateForm(dragContext.els.noticeForm, dragContext.targetCoords);
+      document.removeEventListener('mousemove', dragContext.onMouseMove);
+      document.removeEventListener('mouseup', dragContext.onMouseUp);
+    };
+  }
 
-      function updateForm(form, coords) {
-        // Координаты X и Y - это не координаты левого верхнего угла блока метки,
-        // а координаты, на которые указывает метка своим острым концом.
-        // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
-        var x = coords.x + 62 / 2 + 10 / 2;
-        var y = coords.y + 62 + 22;
-        var addressInput = form.querySelector('#address');
-        if (addressInput) {
-          addressInput.value = 'x: ' + x + ', y: ' + y;
-        }
-      }
+  function initOnMouseUpFactory(els, ads) {
+    var onMouseUp = function (evt) {
+      init(els, ads);
+      var target = evt.target.closest('.map');
+      target.removeEventListener('mouseup', onMouseUp);
+    };
+    return onMouseUp;
+  }
+
+  function init(els, ads) {
+    if (isInitialized) {
+      return;
     }
+    els.map.classList.remove('map--faded');
+    els.noticeForm.classList.remove('notice__form--disabled');
+    els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
+    els.mapPinsContainer.addEventListener('click', onMapPinsContainerClickFactory(els, ads));
 
-    function init() {
-      if (isInitialized) {
-        return;
-      }
-      els.map.classList.remove('map--faded');
-      els.noticeForm.classList.remove('notice__form--disabled');
-      els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
-      els.mapPinsContainer.addEventListener('click', onMapPinsContainerClick);
-
-      var mapPins = [];
-      for (var i = 0; i < ads.length; i++) {
-        mapPins[i] = initMapPinEl(cloneMapPinEl(els.template), ads[i]);
-      }
-      renderMapPins(els.mapPinsContainer, mapPins);
-      isInitialized = true;
+    var mapPins = [];
+    for (var i = 0; i < ads.length; i++) {
+      mapPins[i] = initMapPinEl(cloneMapPinEl(els.template), ads[i]);
     }
+    renderMapPins(els.mapPinsContainer, mapPins);
+    isInitialized = true;
+  }
 
-    function onMapPinsContainerClick(evt) {
+  function onMapPinsContainerClickFactory(els, ads) {
+    return function (evt) {
       var mapPin = evt.target.closest('.map__pin');
       // ignore clicks on elements other than regular map pins
       if (!mapPin || mapPin.classList.contains('map__pin--main')) {
@@ -89,14 +105,25 @@
         mapFiltersContainer: els.mapFiltersContainer,
         template: els.template.querySelector('.map__card')
       }, ad);
+    };
+  }
+
+  function updateForm(form, coords) {
+    // Координаты X и Y - это не координаты левого верхнего угла блока метки,
+    // а координаты, на которые указывает метка своим острым концом.
+    // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
+    var x = coords.x + 62 / 2 + 10 / 2;
+    var y = coords.y + 62 + 22;
+    var addressInput = form.querySelector('#address');
+    if (addressInput) {
+      addressInput.value = 'x: ' + x + ', y: ' + y;
     }
-  };
+  }
 
   function getTargetCoords(target, shift) {
-    var parentRect = target.parentElement.getBoundingClientRect();
     var result = {
-      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, parentRect.width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, parentRect.height)
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, target.parentElement.getBoundingClientRect().width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, target.parentElement.getBoundingClientRect().height)
     };
     return result;
   }
