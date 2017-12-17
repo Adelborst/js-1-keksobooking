@@ -1,7 +1,6 @@
 'use strict';
 
 (function () {
-
   // «Лачуга» — минимальная цена 0
   // «Квартира» — минимальная цена 1000
   // «Дом» — минимальная цена 5000
@@ -30,12 +29,49 @@
     '14:00': '14:00'
   };
 
-  window.initForm = function (els) {
+  window.initForm = function (els, onError) {
     initSyncTimeInAndTimeOut(els.timeIn, els.timeOut);
     initSyncTypeWithMinPrice(els.type, els.price, TYPE_TO_MIN_PRICE_MAP);
     initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity, ROOM_NUMBER_TO_CAPACITIES_MAP);
     initNotifyOnInvalidInput(els.noticeForm);
+    initFormSubmission(els.noticeForm, onError);
   };
+
+  function initFormSubmission(form, onError) {
+    var initialFieldValues = {};
+    var fields = form.querySelectorAll('[id]');
+    fields.forEach(function (field) {
+      initialFieldValues[field.id] = field.type === 'checkbox' ?
+        field.checked :
+        field.value;
+    });
+    var onFormSubmit = onFormSubmitFactory(initialFieldValues, onError);
+    form.addEventListener('submit', onFormSubmit);
+  }
+
+  function onFormSubmitFactory(initialFieldValues, onLoad, onError) {
+    return function (evt) {
+      evt.preventDefault();
+      var form = evt.target;
+      window.backend.save(new FormData(form), function () {
+        resetForm(form, initialFieldValues);
+      }, onError);
+    };
+  }
+
+  function resetForm(form, initialFieldValues) {
+    Object.keys(initialFieldValues).forEach(function (id) {
+      var field = form.querySelector('#' + id);
+      if (!field) {
+        return;
+      }
+      if (field.type === 'checkbox') {
+        field.checked = initialFieldValues[id];
+      } else {
+        field.value = initialFieldValues[id];
+      }
+    });
+  }
 
   function initNotifyOnInvalidInput(form) {
     form.addEventListener('invalid', function (evt) {

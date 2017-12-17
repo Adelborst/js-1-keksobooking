@@ -98,7 +98,7 @@
       if (!mapPin || mapPin.classList.contains('map__pin--main')) {
         return;
       }
-      var ad = ads[mapPin.dataset.id];
+      var ad = ads[parseInt(mapPin.dataset.id, 10)];
       makeMapPinActive(evt.currentTarget, mapPin);
       window.showCard({
         map: els.map,
