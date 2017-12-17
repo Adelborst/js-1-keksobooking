@@ -1,7 +1,12 @@
 'use strict';
 
 (function () {
-  var isInitialized = false;
+  var MAP_MIN_X = 0;
+  var MAP_MIN_Y = 120;
+  var MAP_FILTERS_HEIGHT = 46;
+
+  var PIN_SHIFT_X = 62 / 2 + 10 / 2;
+  var PIN_SHIFT_Y = 62 + 22;
 
   window.initMapPins = function (els, ads) {
     var dragContext = {
@@ -75,9 +80,6 @@
   }
 
   function init(els, ads) {
-    if (isInitialized) {
-      return;
-    }
     els.map.classList.remove('map--faded');
     els.noticeForm.classList.remove('notice__form--disabled');
     els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
@@ -87,7 +89,6 @@
       return initMapPinEl(cloneMapPinEl(els.template), ad);
     });
     renderMapPins(els.mapPinsContainer, mapPins);
-    isInitialized = true;
   }
 
   function onMapPinsContainerClickFactory(els, ads) {
@@ -111,8 +112,8 @@
     // Координаты X и Y - это не координаты левого верхнего угла блока метки,
     // а координаты, на которые указывает метка своим острым концом.
     // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
-    var x = coords.x + 62 / 2 + 10 / 2;
-    var y = coords.y + 62 + 22;
+    var x = coords.x + PIN_SHIFT_X;
+    var y = coords.y + PIN_SHIFT_Y;
     var addressInput = form.querySelector('#address');
     if (addressInput) {
       addressInput.value = 'x: ' + x + ', y: ' + y;
@@ -122,8 +123,8 @@
   function getTargetCoords(target, shift) {
     var parentRect = target.parentElement.getBoundingClientRect();
     return {
-      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, parentRect.width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 120, parentRect.height - 46)
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X, parentRect.width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y, parentRect.height - MAP_FILTERS_HEIGHT)
     };
   }
 
