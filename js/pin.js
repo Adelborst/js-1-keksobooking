@@ -99,7 +99,7 @@
       }
       var ad = ads[mapPin.dataset.id];
       makeMapPinActive(evt.currentTarget, mapPin);
-      window.showAdMapCard({
+      window.showCard({
         map: els.map,
         mapFiltersContainer: els.mapFiltersContainer,
         template: els.template.querySelector('.map__card')

@@ -24,6 +24,12 @@
     100: [0]
   };
 
+  var CHECKIN_CHECKOUT_MAP = {
+    '12:00': '12:00',
+    '13:00': '13:00',
+    '14:00': '14:00'
+  };
+
   window.initForm = function (els) {
     initSyncTimeInAndTimeOut(els.timeIn, els.timeOut);
     initSyncTypeWithMinPrice(els.type, els.price, TYPE_TO_MIN_PRICE_MAP);
@@ -38,49 +44,36 @@
   }
 
   function initSyncRoomNumberWithCapacity(roomNumberInput, capacityInput, roomNumberToCapacitiesMap) {
-    initCapacityEl(roomNumberToCapacitiesMap[roomNumberInput.value], capacityInput);
-
-    roomNumberInput.addEventListener('change', function (evt) {
-      initCapacityEl(roomNumberToCapacitiesMap[evt.target.value], capacityInput);
-    });
-  }
-
-  function initCapacityEl(capacityOptions, capacityInput) {
-    for (var i = 0; i < capacityInput.childElementCount; i++) {
-      var capacity = parseInt(capacityInput.children[i].value, 10);
-      if (~capacityOptions.indexOf(capacity)) {
-        capacityInput.children[i].removeAttribute('disabled');
-      } else {
-        capacityInput.children[i].setAttribute('disabled', '');
-      }
-    }
-    var selectedOption = capacityInput.querySelector('option[selected]');
-    // automatically select a different enabled option if current option has become disabled
-    if (selectedOption && selectedOption.hasAttribute('disabled')) {
-      selectedOption.removeAttribute('selected');
-      var enabledOption = capacityInput.querySelector('option:not([disabled])');
-      if (enabledOption) {
-        enabledOption.setAttribute('selected', '');
-      }
-    }
+    initSelect(capacityInput, roomNumberToCapacitiesMap[roomNumberInput.value]);
+    window.synchronizeFields(roomNumberInput, capacityInput, Object.keys(roomNumberToCapacitiesMap), Object.values(roomNumberToCapacitiesMap), initSelect);
   }
 
   function initSyncTypeWithMinPrice(typeInput, priceInput, typeToMinPriceMap) {
-    typeInput.addEventListener('change', function (evt) {
-      var minPrice = typeToMinPriceMap[evt.target.value];
-      priceInput.setAttribute('min', minPrice);
-      if (priceInput.value < minPrice) {
-        priceInput.value = minPrice;
-      }
-    });
+    window.synchronizeFields(typeInput, priceInput, Object.keys(typeToMinPriceMap), Object.values(typeToMinPriceMap), syncMin);
   }
 
   function initSyncTimeInAndTimeOut(timeInInput, timeOutInput) {
-    timeInInput.addEventListener('change', onChange);
-    timeOutInput.addEventListener('change', onChange);
+    window.synchronizeFields(timeInInput, timeOutInput, Object.keys(CHECKIN_CHECKOUT_MAP), Object.values(CHECKIN_CHECKOUT_MAP), syncValue);
+    window.synchronizeFields(timeOutInput, timeInInput, Object.values(CHECKIN_CHECKOUT_MAP), Object.keys(CHECKIN_CHECKOUT_MAP), syncValue);
+  }
 
-    function onChange(evt) {
-      timeOutInput.value = timeInInput.value = evt.target.value;
+  function initSelect(select, optionsValues) {
+    for (var i = 0; i < select.childElementCount; i++) {
+      var optionValue = parseInt(select.children[i].value, 10);
+      select.children[i].disabled = !~optionsValues.indexOf(optionValue);
     }
+    if (select.children[select.selectedIndex].hasAttribute('disabled')) {
+      var enabledOption = select.querySelector('option:not([disabled])');
+      select.selectedIndex = Array.prototype.indexOf.call(select.children, enabledOption);
+    }
+  }
+
+  function syncValue(element, value) {
+    element.value = value;
+  }
+
+  function syncMin(element, value) {
+    element.min = value;
+    element.value = Math.max(element.value, element.min);
   }
 })();
