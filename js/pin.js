@@ -123,7 +123,7 @@
     var parentRect = target.parentElement.getBoundingClientRect();
     return {
       x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, parentRect.width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, parentRect.height)
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 120, parentRect.height - 46)
     };
   }
 
