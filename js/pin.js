@@ -121,9 +121,10 @@
   }
 
   function getTargetCoords(target, shift) {
+    var parentRect = target.parentElement.getBoundingClientRect();
     return {
-      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, target.parentElement.getBoundingClientRect().width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, target.parentElement.getBoundingClientRect().height)
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, parentRect.width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, parentRect.height)
     };
   }
 
