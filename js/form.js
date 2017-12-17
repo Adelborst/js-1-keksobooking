@@ -67,7 +67,11 @@
 
   function initSyncTypeWithMinPrice(typeInput, priceInput, typeToMinPriceMap) {
     typeInput.addEventListener('change', function (evt) {
-      priceInput.setAttribute('min', typeToMinPriceMap[evt.target.value]);
+      var minPrice = typeToMinPriceMap[evt.target.value];
+      priceInput.setAttribute('min', minPrice);
+      if (priceInput.value < minPrice) {
+        priceInput.value = minPrice;
+      }
     });
   }
 

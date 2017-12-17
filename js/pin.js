@@ -1,25 +1,98 @@
 'use strict';
 
 (function () {
+  var MAP_MIN_X = 0;
+  var MAP_MIN_Y = 120;
+  var MAP_FILTERS_HEIGHT = 46;
+
+  var PIN_SHIFT_X = 62 / 2 + 10 / 2;
+  var PIN_SHIFT_Y = 62 + 22;
+
   window.initMapPins = function (els, ads) {
-    els.mapPinMain.addEventListener('mouseup', onMapPinMainDrop);
+    var dragContext = {
+      els: els,
+      ads: ads,
+      target: null,
+      initialCoords: null,
+      targetCoords: null
+    };
+    dragContext.onMouseDown = onMouseDownFactory(dragContext);
+    dragContext.onMouseMove = onMouseMoveFactory(dragContext);
+    dragContext.onMouseUp = onMouseUpFactory(dragContext);
+    var initOnMouseUp = initOnMouseUpFactory(els, ads);
+    els.mapPinMain.addEventListener('mousedown', dragContext.onMouseDown);
+    els.mapPinMain.addEventListener('mouseup', initOnMouseUp);
+  };
 
-    function onMapPinMainDrop() {
-      els.map.classList.remove('map--faded');
-      els.noticeForm.classList.remove('notice__form--disabled');
-      els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
+  function onMouseDownFactory(dragContext) {
+    return function (evt) {
+      evt.preventDefault();
+      dragContext.target = evt.target.closest('.map__pin--main');
+      dragContext.initialCoords = {
+        x: evt.clientX,
+        y: evt.clientY
+      };
+      dragContext.targetCoords = {
+        x: evt.clientX,
+        y: evt.clientY
+      };
+      document.addEventListener('mousemove', dragContext.onMouseMove);
+      document.addEventListener('mouseup', dragContext.onMouseUp);
+    };
+  }
 
-      var mapPins = [];
-      for (var i = 0; i < ads.length; i++) {
-        mapPins[i] = initMapPinEl(cloneMapPinEl(els.template), ads[i]);
-      }
-      els.mapPinsContainer.addEventListener('click', onMapPinsContainerClick);
-      renderMapPins(els.mapPinsContainer, mapPins);
+  function onMouseMoveFactory(dragContext) {
+    return function (evt) {
+      evt.preventDefault();
+      var shift = {
+        x: dragContext.initialCoords.x - evt.clientX,
+        y: dragContext.initialCoords.y - evt.clientY,
+      };
 
-      els.mapPinMain.removeEventListener('mouseup', onMapPinMainDrop);
-    }
+      dragContext.initialCoords = {
+        x: evt.clientX,
+        y: evt.clientY
+      };
 
-    function onMapPinsContainerClick(evt) {
+      dragContext.targetCoords = getTargetCoords(dragContext.target, shift);
+
+      dragContext.target.style.left = dragContext.targetCoords.x + 'px';
+      dragContext.target.style.top = dragContext.targetCoords.y + 'px';
+    };
+  }
+
+  function onMouseUpFactory(dragContext) {
+    return function (evt) {
+      evt.preventDefault();
+      updateForm(dragContext.els.noticeForm, dragContext.targetCoords);
+      document.removeEventListener('mousemove', dragContext.onMouseMove);
+      document.removeEventListener('mouseup', dragContext.onMouseUp);
+    };
+  }
+
+  function initOnMouseUpFactory(els, ads) {
+    var onMouseUp = function (evt) {
+      init(els, ads);
+      var target = evt.target.closest('.map__pin--main');
+      target.removeEventListener('mouseup', onMouseUp);
+    };
+    return onMouseUp;
+  }
+
+  function init(els, ads) {
+    els.map.classList.remove('map--faded');
+    els.noticeForm.classList.remove('notice__form--disabled');
+    els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
+    els.mapPinsContainer.addEventListener('click', onMapPinsContainerClickFactory(els, ads));
+
+    var mapPins = ads.map(function (ad) {
+      return initMapPinEl(cloneMapPinEl(els.template), ad);
+    });
+    renderMapPins(els.mapPinsContainer, mapPins);
+  }
+
+  function onMapPinsContainerClickFactory(els, ads) {
+    return function (evt) {
       var mapPin = evt.target.closest('.map__pin');
       // ignore clicks on elements other than regular map pins
       if (!mapPin || mapPin.classList.contains('map__pin--main')) {
@@ -32,8 +105,28 @@
         mapFiltersContainer: els.mapFiltersContainer,
         template: els.template.querySelector('.map__card')
       }, ad);
+    };
+  }
+
+  function updateForm(form, coords) {
+    // Координаты X и Y - это не координаты левого верхнего угла блока метки,
+    // а координаты, на которые указывает метка своим острым концом.
+    // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
+    var x = coords.x + PIN_SHIFT_X;
+    var y = coords.y + PIN_SHIFT_Y;
+    var addressInput = form.querySelector('#address');
+    if (addressInput) {
+      addressInput.value = 'x: ' + x + ', y: ' + y;
     }
-  };
+  }
+
+  function getTargetCoords(target, shift) {
+    var parentRect = target.parentElement.getBoundingClientRect();
+    return {
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X, parentRect.width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y, parentRect.height - MAP_FILTERS_HEIGHT)
+    };
+  }
 
   function cloneMapPinEl(template) {
     var mapPinTemplate = template.querySelector('.map__pin');
@@ -44,7 +137,7 @@
     var avatarImg = mapPin.querySelector('img');
     // Taking into account the size of the element
     // so that the map pin will point to the actual location
-    var x = ad.location.x - 23;
+    var x = ad.location.x - 46 / 2;
     var y = ad.location.y - 46 - 18;
     mapPin.style.left = x + 'px';
     mapPin.style.top = y + 'px';
