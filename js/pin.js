@@ -121,11 +121,10 @@
   }
 
   function getTargetCoords(target, shift) {
-    var result = {
+    return {
       x: window.utils.getBoundedValue(target.offsetLeft - shift.x, 0, target.parentElement.getBoundingClientRect().width),
       y: window.utils.getBoundedValue(target.offsetTop - shift.y, 0, target.parentElement.getBoundingClientRect().height)
     };
-    return result;
   }
 
   function cloneMapPinEl(template) {
