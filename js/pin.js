@@ -16,7 +16,7 @@
     dragContext.onMouseUp = onMouseUpFactory(dragContext);
     var initOnMouseUp = initOnMouseUpFactory(els, ads);
     els.mapPinMain.addEventListener('mousedown', dragContext.onMouseDown);
-    els.map.addEventListener('mouseup', initOnMouseUp);
+    els.mapPinMain.addEventListener('mouseup', initOnMouseUp);
   };
 
   function onMouseDownFactory(dragContext) {
@@ -68,7 +68,7 @@
   function initOnMouseUpFactory(els, ads) {
     var onMouseUp = function (evt) {
       init(els, ads);
-      var target = evt.target.closest('.map');
+      var target = evt.target.closest('.map__pin--main');
       target.removeEventListener('mouseup', onMouseUp);
     };
     return onMouseUp;
