@@ -83,10 +83,9 @@
     els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
     els.mapPinsContainer.addEventListener('click', onMapPinsContainerClickFactory(els, ads));
 
-    var mapPins = [];
-    for (var i = 0; i < ads.length; i++) {
-      mapPins[i] = initMapPinEl(cloneMapPinEl(els.template), ads[i]);
-    }
+    var mapPins = ads.map(function (ad) {
+      return initMapPinEl(cloneMapPinEl(els.template), ad);
+    });
     renderMapPins(els.mapPinsContainer, mapPins);
     isInitialized = true;
   }
