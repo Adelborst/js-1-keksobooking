@@ -70,7 +70,7 @@
     var el = document.createElement('div');
     el.style.margin = '0 auto';
     el.style.backgroundColor = 'red';
-    el.innerText = errorMessage;
+    el.textContent = errorMessage;
     el.style.fontSize = '30px';
     el.style.textAlign = 'center';
     el.style.position = 'fixed';
