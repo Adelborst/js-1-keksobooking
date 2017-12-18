@@ -31,9 +31,9 @@
   };
 
   window.initForm = function (els) {
-    initSyncTimeInAndTimeOut(els.timeIn, els.timeOut);
-    initSyncTypeWithMinPrice(els.type, els.price, TYPE_TO_MIN_PRICE_MAP);
-    initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity, ROOM_NUMBER_TO_CAPACITIES_MAP);
+    initSyncTimeInAndTimeOut(els.timeIn, els.timeOut, Object.keys(CHECKIN_CHECKOUT_MAP), Object.values(CHECKIN_CHECKOUT_MAP));
+    initSyncTypeWithMinPrice(els.type, els.price, Object.keys(TYPE_TO_MIN_PRICE_MAP), Object.values(TYPE_TO_MIN_PRICE_MAP));
+    initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity, Object.keys(ROOM_NUMBER_TO_CAPACITIES_MAP), Object.values(ROOM_NUMBER_TO_CAPACITIES_MAP));
     initNotifyOnInvalidInput(els.noticeForm);
   };
 
@@ -43,18 +43,19 @@
     });
   }
 
-  function initSyncRoomNumberWithCapacity(roomNumberInput, capacityInput, roomNumberToCapacitiesMap) {
-    initSelect(capacityInput, roomNumberToCapacitiesMap[roomNumberInput.value]);
-    window.synchronizeFields(roomNumberInput, capacityInput, Object.keys(roomNumberToCapacitiesMap), Object.values(roomNumberToCapacitiesMap), initSelect);
+  function initSyncRoomNumberWithCapacity(roomNumberInput, capacityInput, roomNumberValues, capacityValues) {
+    var currentValueIndex = roomNumberValues.indexOf(roomNumberInput.value);
+    initSelect(capacityInput, capacityValues[currentValueIndex]);
+    window.synchronizeFields(roomNumberInput, capacityInput, roomNumberValues, capacityValues, initSelect);
   }
 
-  function initSyncTypeWithMinPrice(typeInput, priceInput, typeToMinPriceMap) {
-    window.synchronizeFields(typeInput, priceInput, Object.keys(typeToMinPriceMap), Object.values(typeToMinPriceMap), syncMin);
+  function initSyncTypeWithMinPrice(typeInput, priceInput, typeValues, priceValues) {
+    window.synchronizeFields(typeInput, priceInput, typeValues, priceValues, syncMin);
   }
 
-  function initSyncTimeInAndTimeOut(timeInInput, timeOutInput) {
-    window.synchronizeFields(timeInInput, timeOutInput, Object.keys(CHECKIN_CHECKOUT_MAP), Object.values(CHECKIN_CHECKOUT_MAP), syncValue);
-    window.synchronizeFields(timeOutInput, timeInInput, Object.values(CHECKIN_CHECKOUT_MAP), Object.keys(CHECKIN_CHECKOUT_MAP), syncValue);
+  function initSyncTimeInAndTimeOut(timeInInput, timeOutInput, timeInValues, timeOutValues) {
+    window.synchronizeFields(timeInInput, timeOutInput, timeInValues, timeOutValues, syncValue);
+    window.synchronizeFields(timeOutInput, timeInInput, timeOutValues, timeInValues, syncValue);
   }
 
   function initSelect(select, optionsValues) {
