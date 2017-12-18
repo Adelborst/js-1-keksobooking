@@ -5,8 +5,11 @@
   var MAP_MIN_Y = 120;
   var MAP_FILTERS_HEIGHT = 46;
 
-  var PIN_SHIFT_X = 62 / 2 + 10 / 2;
-  var PIN_SHIFT_Y = 62 + 22;
+  var MAIN_PIN_SHIFT_X = 62 / 2 + 10 / 2;
+  var MAIN_PIN_SHIFT_Y = 62 + 22;
+
+  var PIN_SHIFT_X = 46 / 2;
+  var PIN_SHIFT_Y = 46 - 18;
 
   window.initMapPins = function (els, ads) {
     var dragContext = {
@@ -98,7 +101,7 @@
       if (!mapPin || mapPin.classList.contains('map__pin--main')) {
         return;
       }
-      var ad = ads[mapPin.dataset.id];
+      var ad = ads[parseInt(mapPin.dataset.id, 10)];
       makeMapPinActive(evt.currentTarget, mapPin);
       window.showCard({
         map: els.map,
@@ -112,8 +115,8 @@
     // Координаты X и Y - это не координаты левого верхнего угла блока метки,
     // а координаты, на которые указывает метка своим острым концом.
     // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
-    var x = coords.x + PIN_SHIFT_X;
-    var y = coords.y + PIN_SHIFT_Y;
+    var x = coords.x + MAIN_PIN_SHIFT_X;
+    var y = coords.y + MAIN_PIN_SHIFT_Y;
     var addressInput = form.querySelector('#address');
     if (addressInput) {
       addressInput.value = 'x: ' + x + ', y: ' + y;
@@ -137,8 +140,8 @@
     var avatarImg = mapPin.querySelector('img');
     // Taking into account the size of the element
     // so that the map pin will point to the actual location
-    var x = ad.location.x - 46 / 2;
-    var y = ad.location.y - 46 - 18;
+    var x = ad.location.x - PIN_SHIFT_X;
+    var y = ad.location.y - PIN_SHIFT_Y;
     mapPin.style.left = x + 'px';
     mapPin.style.top = y + 'px';
     avatarImg.setAttribute('src', ad.author.avatar);
