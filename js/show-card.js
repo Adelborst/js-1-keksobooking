@@ -9,7 +9,7 @@
     'house': 'Дом'
   };
 
-  window.showAdMapCard = function (els, ad) {
+  window.showCard = function (els, ad) {
     var mapCard = els.map.querySelector('.map__card') || els.template.cloneNode(true);
     initMapCardEl(mapCard, ad);
     document.addEventListener('keydown', onEscClick);
@@ -69,5 +69,4 @@
       featuresListItemEls[i].style.display = feature ? null : 'none';
     }
   }
-
 })();

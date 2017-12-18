@@ -24,10 +24,16 @@
     100: [0]
   };
 
+  var CHECKIN_CHECKOUT_MAP = {
+    '12:00': '12:00',
+    '13:00': '13:00',
+    '14:00': '14:00'
+  };
+
   window.initForm = function (els) {
-    initSyncTimeInAndTimeOut(els.timeIn, els.timeOut);
-    initSyncTypeWithMinPrice(els.type, els.price, TYPE_TO_MIN_PRICE_MAP);
-    initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity, ROOM_NUMBER_TO_CAPACITIES_MAP);
+    initSyncTimeInAndTimeOut(els.timeIn, els.timeOut, Object.keys(CHECKIN_CHECKOUT_MAP), Object.values(CHECKIN_CHECKOUT_MAP));
+    initSyncTypeWithMinPrice(els.type, els.price, Object.keys(TYPE_TO_MIN_PRICE_MAP), Object.values(TYPE_TO_MIN_PRICE_MAP));
+    initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity, Object.keys(ROOM_NUMBER_TO_CAPACITIES_MAP), Object.values(ROOM_NUMBER_TO_CAPACITIES_MAP));
     initNotifyOnInvalidInput(els.noticeForm);
   };
 
@@ -37,50 +43,38 @@
     });
   }
 
-  function initSyncRoomNumberWithCapacity(roomNumberInput, capacityInput, roomNumberToCapacitiesMap) {
-    initCapacityEl(roomNumberToCapacitiesMap[roomNumberInput.value], capacityInput);
-
-    roomNumberInput.addEventListener('change', function (evt) {
-      initCapacityEl(roomNumberToCapacitiesMap[evt.target.value], capacityInput);
-    });
+  function initSyncRoomNumberWithCapacity(roomNumberInput, capacityInput, roomNumberValues, capacityValues) {
+    var currentValueIndex = roomNumberValues.indexOf(roomNumberInput.value);
+    initSelect(capacityInput, capacityValues[currentValueIndex]);
+    window.synchronizeFields(roomNumberInput, capacityInput, roomNumberValues, capacityValues, initSelect);
   }
 
-  function initCapacityEl(capacityOptions, capacityInput) {
-    for (var i = 0; i < capacityInput.childElementCount; i++) {
-      var capacity = parseInt(capacityInput.children[i].value, 10);
-      if (~capacityOptions.indexOf(capacity)) {
-        capacityInput.children[i].removeAttribute('disabled');
-      } else {
-        capacityInput.children[i].setAttribute('disabled', '');
-      }
+  function initSyncTypeWithMinPrice(typeInput, priceInput, typeValues, priceValues) {
+    window.synchronizeFields(typeInput, priceInput, typeValues, priceValues, syncMin);
+  }
+
+  function initSyncTimeInAndTimeOut(timeInInput, timeOutInput, timeInValues, timeOutValues) {
+    window.synchronizeFields(timeInInput, timeOutInput, timeInValues, timeOutValues, syncValue);
+    window.synchronizeFields(timeOutInput, timeInInput, timeOutValues, timeInValues, syncValue);
+  }
+
+  function initSelect(select, optionsValues) {
+    for (var i = 0; i < select.childElementCount; i++) {
+      var optionValue = parseInt(select.children[i].value, 10);
+      select.children[i].disabled = !~optionsValues.indexOf(optionValue);
     }
-    var selectedOption = capacityInput.querySelector('option[selected]');
-    // automatically select a different enabled option if current option has become disabled
-    if (selectedOption && selectedOption.hasAttribute('disabled')) {
-      selectedOption.removeAttribute('selected');
-      var enabledOption = capacityInput.querySelector('option:not([disabled])');
-      if (enabledOption) {
-        enabledOption.setAttribute('selected', '');
-      }
+    if (select.children[select.selectedIndex].hasAttribute('disabled')) {
+      var enabledOption = select.querySelector('option:not([disabled])');
+      select.selectedIndex = Array.prototype.indexOf.call(select.children, enabledOption);
     }
   }
 
-  function initSyncTypeWithMinPrice(typeInput, priceInput, typeToMinPriceMap) {
-    typeInput.addEventListener('change', function (evt) {
-      var minPrice = typeToMinPriceMap[evt.target.value];
-      priceInput.setAttribute('min', minPrice);
-      if (priceInput.value < minPrice) {
-        priceInput.value = minPrice;
-      }
-    });
+  function syncValue(element, value) {
+    element.value = value;
   }
 
-  function initSyncTimeInAndTimeOut(timeInInput, timeOutInput) {
-    timeInInput.addEventListener('change', onChange);
-    timeOutInput.addEventListener('change', onChange);
-
-    function onChange(evt) {
-      timeOutInput.value = timeInInput.value = evt.target.value;
-    }
+  function syncMin(element, value) {
+    element.min = value;
+    element.value = Math.max(element.value, element.min);
   }
 })();
