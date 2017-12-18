@@ -39,7 +39,7 @@
 
   function initFormSubmission(form, onError) {
     var fields = form.querySelectorAll('[id]');
-    var initialFieldValues = fields.reduce(function (acc, field) {
+    var initialFieldValues = Array.prototype.reduce.call(fields, function (acc, field) {
       acc[field.id] = field.type === 'checkbox' ?
         field.checked :
         field.value;
