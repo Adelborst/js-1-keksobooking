@@ -1,8 +1,8 @@
 'use strict';
 
 (function () {
-  window.synchronizeFields = function (srcField, targetField, srcValues, targetValues, syncFunc) {
-    var onChange = onChangeFactory(targetField, srcValues, targetValues, syncFunc);
+  window.synchronizeFields = function (srcField) {
+    var onChange = onChangeFactory.apply(null, Array.prototype.slice.call(arguments, 1));
     srcField.addEventListener('change', onChange);
   };
 
