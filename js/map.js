@@ -55,6 +55,55 @@
     'high': [50000, +Infinity]
   };
 
+  var pinInitEls = {
+    template: templateEl,
+    map: mapEl,
+    mapFiltersContainer: mapFiltersContainerEl,
+    mapPinMain: mapPinMainEl,
+    mapPinsContainer: mapPinsContainerEl,
+    noticeForm: noticeFormEl
+  };
+  window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
+  function onAdsLoad(data) {
+    var ads = data.slice(0, Math.min(ADS_COUNT, data.length));
+    ads.forEach(function (ad, i) {
+      ad.id = i;
+    });
+    init(pinInitEls);
+    window.pins.renderAds(pinInitEls, ads);
+  }
+
+  function onMainMapPinDragEnd(targetCoords) {
+    window.backend.load(onAdsLoad, onError);
+  }
+
+  function onMapPinActivated(mapPin) {
+    var adId = parseInt(mapPin.dataset.id, 10);
+  }
+
+  function init(els) {
+    els.map.classList.remove('map--faded');
+    els.noticeForm.classList.remove('notice__form--disabled');
+    els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
+    // var onMapPinsClick = onMapPinsClickFactory(els, onMapPinActivated);
+    // els.mapPinsContainer.addEventListener('click', onMapPinsClick);
+  }
+
+  function onError(errorMessage) {
+    var el = document.createElement('div');
+    el.style.margin = '0 auto';
+    el.style.backgroundColor = 'red';
+    el.style.fontSize = '30px';
+    el.style.textAlign = 'center';
+    el.style.position = 'fixed';
+    el.style.zIndex = 1000000;
+    el.style.width = '100%';
+    el.style.left = 0;
+    el.style.right = 0;
+    el.textContent = errorMessage;
+    document.body.insertAdjacentElement('afterbegin', el);
+  }
+
   window.mapFilters.init(mapFiltersEl, function (filter) {
     var fff = Object.keys(filter).reduce(function (acc, cur) {
       if (cur.startsWith('filter-')) {
@@ -87,40 +136,7 @@
       ads.forEach(function (ad, i) {
         ad.id = i;
       });
-      window.initMapPins(mapPinsEls, ads);
+      window.pins.initDrag(pinInitEls, ads);
     }, onError);
   });
-
-  var mapPinsEls = {
-    template: templateEl,
-    map: mapEl,
-    mapFiltersContainer: mapFiltersContainerEl,
-    mapPinMain: mapPinMainEl,
-    mapPinsContainer: mapPinsContainerEl,
-    noticeForm: noticeFormEl
-  };
-  window.backend.load(onAdsLoad, onError);
-
-  function onAdsLoad(data) {
-    var ads = data.slice(0, Math.min(ADS_COUNT, data.length));
-    ads.forEach(function (ad, i) {
-      ad.id = i;
-    });
-    window.initMapPins(mapPinsEls, ads);
-  }
-
-  function onError(errorMessage) {
-    var el = document.createElement('div');
-    el.style.margin = '0 auto';
-    el.style.backgroundColor = 'red';
-    el.style.fontSize = '30px';
-    el.style.textAlign = 'center';
-    el.style.position = 'fixed';
-    el.style.zIndex = 1000000;
-    el.style.width = '100%';
-    el.style.left = 0;
-    el.style.right = 0;
-    el.textContent = errorMessage;
-    document.body.insertAdjacentElement('afterbegin', el);
-  }
 })();

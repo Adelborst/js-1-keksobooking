@@ -11,21 +11,25 @@
   var PIN_SHIFT_X = 46 / 2;
   var PIN_SHIFT_Y = 46 - 18;
 
-  window.initMapPins = function (els, ads) {
+  window.pins = {
+    initDrag: initDrag,
+    renderAds: renderAds
+  };
+
+  function initDrag(els, onDragEnd) {
     var dragContext = {
       els: els,
-      ads: ads,
       target: null,
       initialCoords: null,
-      targetCoords: null
+      targetCoords: null,
+      onDragEnd: onDragEnd
     };
     dragContext.onMouseDown = onMouseDownFactory(dragContext);
     dragContext.onMouseMove = onMouseMoveFactory(dragContext);
     dragContext.onMouseUp = onMouseUpFactory(dragContext);
-    var initOnMouseUp = initOnMouseUpFactory(els, ads);
     els.mapPinMain.addEventListener('mousedown', dragContext.onMouseDown);
-    els.mapPinMain.addEventListener('mouseup', initOnMouseUp);
-  };
+    els.mapPinMain.addEventListener('mouseup', onFirstMouseUp);
+  }
 
   function onMouseDownFactory(dragContext) {
     return function (evt) {
@@ -67,47 +71,47 @@
   function onMouseUpFactory(dragContext) {
     return function (evt) {
       evt.preventDefault();
-      updateForm(dragContext.els.noticeForm, dragContext.targetCoords);
+      // updateForm(dragContext.els.noticeForm, dragContext.targetCoords);
       document.removeEventListener('mousemove', dragContext.onMouseMove);
       document.removeEventListener('mouseup', dragContext.onMouseUp);
+      if (typeof dragContext.onDragEnd !== 'undefined' && dragContext.onDragEnd !== null) {
+        dragContext.onDragEnd(dragContext.targetCoords);
+      }
     };
   }
 
-  function initOnMouseUpFactory(els, ads) {
+  function onFirstMouseUp() {
     var onMouseUp = function (evt) {
-      init(els, ads);
       var target = evt.target.closest('.map__pin--main');
       target.removeEventListener('mouseup', onMouseUp);
     };
     return onMouseUp;
   }
 
-  function init(els, ads) {
-    els.map.classList.remove('map--faded');
-    els.noticeForm.classList.remove('notice__form--disabled');
-    els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
-    els.mapPinsContainer.addEventListener('click', onMapPinsContainerClickFactory(els, ads));
-
+  function renderAds(els, ads) {
     var mapPins = ads.map(function (ad) {
       return initMapPinEl(cloneMapPinEl(els.template), ad);
     });
     renderMapPins(els.mapPinsContainer, mapPins);
   }
 
-  function onMapPinsContainerClickFactory(els, ads) {
+  function onMapPinsClickFactory(els, onMapPinActivated) {
     return function (evt) {
       var mapPin = evt.target.closest('.map__pin');
       // ignore clicks on elements other than regular map pins
       if (!mapPin || mapPin.classList.contains('map__pin--main')) {
         return;
       }
-      var ad = ads[parseInt(mapPin.dataset.id, 10)];
-      makeMapPinActive(evt.currentTarget, mapPin);
-      window.showCard({
-        map: els.map,
-        mapFiltersContainer: els.mapFiltersContainer,
-        template: els.template.querySelector('.map__card')
-      }, ad);
+      switchActiveMapPin(mapPin);
+      if (typeof onMapPinActivated !== 'undefined' && onMapPinActivated !== null) {
+        onMapPinActivated(mapPin);
+      }
+      // var ad = ads[parseInt(mapPin.dataset.id, 10)];
+      // window.showCard({
+      //   map: els.map,
+      //   mapFiltersContainer: els.mapFiltersContainer,
+      //   template: els.template.querySelector('.map__card')
+      // }, ad);
     };
   }
 
@@ -157,8 +161,8 @@
     container.appendChild(fragment);
   }
 
-  function makeMapPinActive(mapPinsContainer, mapPin) {
-    var activeMapPin = mapPinsContainer.querySelector('.map__pin--active');
+  function switchActiveMapPin(mapPin) {
+    var activeMapPin = mapPin.parentNode.querySelector('.map__pin--active');
     if (activeMapPin) {
       activeMapPin.classList.remove('map__pin--active');
     }
