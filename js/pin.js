@@ -12,9 +12,15 @@
   var PIN_SHIFT_Y = 46 - 18;
 
   window.pins = {
+    initHandlers: initHandlers,
     initDrag: initDrag,
     renderAds: renderAds
   };
+
+  function initHandlers(els, onMapPinActivated) {
+    var onMapPinsClick = onMapPinsClickFactory(els, onMapPinActivated);
+    els.mapPinsContainer.addEventListener('click', onMapPinsClick);
+  }
 
   function initDrag(els, onDragEnd) {
     var dragContext = {
@@ -22,13 +28,21 @@
       target: null,
       initialCoords: null,
       targetCoords: null,
-      onDragEnd: onDragEnd
+      onDragEnd: onDragEnd,
+      getFinalCoords: function () {
+        // Координаты X и Y - это не координаты левого верхнего угла блока метки,
+        // а координаты, на которые указывает метка своим острым концом.
+        // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
+        return {
+          x: this.targetCoords.x + MAIN_PIN_SHIFT_X,
+          y: this.targetCoords.y + MAIN_PIN_SHIFT_Y,
+        };
+      }
     };
     dragContext.onMouseDown = onMouseDownFactory(dragContext);
     dragContext.onMouseMove = onMouseMoveFactory(dragContext);
     dragContext.onMouseUp = onMouseUpFactory(dragContext);
     els.mapPinMain.addEventListener('mousedown', dragContext.onMouseDown);
-    els.mapPinMain.addEventListener('mouseup', onFirstMouseUp);
   }
 
   function onMouseDownFactory(dragContext) {
@@ -71,21 +85,12 @@
   function onMouseUpFactory(dragContext) {
     return function (evt) {
       evt.preventDefault();
-      // updateForm(dragContext.els.noticeForm, dragContext.targetCoords);
       document.removeEventListener('mousemove', dragContext.onMouseMove);
       document.removeEventListener('mouseup', dragContext.onMouseUp);
       if (typeof dragContext.onDragEnd !== 'undefined' && dragContext.onDragEnd !== null) {
-        dragContext.onDragEnd(dragContext.targetCoords);
+        dragContext.onDragEnd(dragContext.getFinalCoords());
       }
     };
-  }
-
-  function onFirstMouseUp() {
-    var onMouseUp = function (evt) {
-      var target = evt.target.closest('.map__pin--main');
-      target.removeEventListener('mouseup', onMouseUp);
-    };
-    return onMouseUp;
   }
 
   function renderAds(els, ads) {
@@ -106,25 +111,7 @@
       if (typeof onMapPinActivated !== 'undefined' && onMapPinActivated !== null) {
         onMapPinActivated(mapPin);
       }
-      // var ad = ads[parseInt(mapPin.dataset.id, 10)];
-      // window.showCard({
-      //   map: els.map,
-      //   mapFiltersContainer: els.mapFiltersContainer,
-      //   template: els.template.querySelector('.map__card')
-      // }, ad);
     };
-  }
-
-  function updateForm(form, coords) {
-    // Координаты X и Y - это не координаты левого верхнего угла блока метки,
-    // а координаты, на которые указывает метка своим острым концом.
-    // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
-    var x = coords.x + MAIN_PIN_SHIFT_X;
-    var y = coords.y + MAIN_PIN_SHIFT_Y;
-    var addressInput = form.querySelector('#address');
-    if (addressInput) {
-      addressInput.value = 'x: ' + x + ', y: ' + y;
-    }
   }
 
   function getTargetCoords(target, shift) {
@@ -153,12 +140,20 @@
     return mapPin;
   }
 
-  function renderMapPins(container, mapPins) {
+  function renderMapPins(mapPinsContainer, mapPins) {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < mapPins.length; i++) {
       fragment.appendChild(mapPins[i]);
     }
-    container.appendChild(fragment);
+    removeExistingMapPins(mapPinsContainer);
+    mapPinsContainer.appendChild(fragment);
+  }
+
+  function removeExistingMapPins(mapPinsContainer) {
+    var existingMapPins = mapPinsContainer.querySelectorAll('.map__pin:not(.map__pin--main)');
+    for (var j = 0; j < existingMapPins.length; j++) {
+      mapPinsContainer.removeChild(existingMapPins[j]);
+    }
   }
 
   function switchActiveMapPin(mapPin) {

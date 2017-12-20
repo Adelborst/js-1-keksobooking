@@ -39,8 +39,11 @@
   function debounce(func, timeout) {
     var timeoutId;
     return function () {
+      var args = arguments;
       window.clearTimeout(timeoutId);
-      timeoutId = window.setTimeout(func, timeout);
+      timeoutId = window.setTimeout(function () {
+        func.apply(null, args);
+      }, timeout);
     };
   }
 

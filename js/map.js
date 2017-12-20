@@ -2,8 +2,26 @@
 
 (function () {
   var ADS_COUNT = 5;
+  var DEBOUNCE_TIMEOUT = 500;
+
+  var debouncedLoad = window.utils.debounce(window.backend.load, DEBOUNCE_TIMEOUT);
+
+  var PRICE_FILTER_RANGES = {
+    'low': [0, 10000],
+    'middle': [10000, 50000],
+    'high': [50000, +Infinity]
+  };
+
+  var filter = window.filter.filterFactory({
+    priceFilterRanges: PRICE_FILTER_RANGES
+  });
+
+  var ads = [];
+  var filters;
 
   var templateEl = document.querySelector('template').content;
+  var mapCardTemplateEl = templateEl.querySelector('.map__card');
+
   var mapEl = document.querySelector('.map');
   var mapFiltersEl = mapEl.querySelector('.map__filters');
   var mapFiltersContainerEl = mapEl.querySelector('.map__filters-container');
@@ -13,6 +31,7 @@
   var noticeFormEl = document.querySelector('.notice__form');
   var avatarEl = noticeFormEl.querySelector('#avatar');
   var titleEl = noticeFormEl.querySelector('#title');
+  var addressEl = noticeFormEl.querySelector('#address');
   var timeInEl = noticeFormEl.querySelector('#timein');
   var timeOutEl = noticeFormEl.querySelector('#timeout');
   var typeEl = noticeFormEl.querySelector('#type');
@@ -32,6 +51,7 @@
     noticeForm: noticeFormEl,
     avatar: avatarEl,
     title: titleEl,
+    address: addressEl,
     timeIn: timeInEl,
     timeOut: timeOutEl,
     type: typeEl,
@@ -49,12 +69,6 @@
   };
   window.initForm(formEls, onError);
 
-  var PRICE_RANGES = {
-    'low': [0, 10000],
-    'middle': [10000, 50000],
-    'high': [50000, +Infinity]
-  };
-
   var pinInitEls = {
     template: templateEl,
     map: mapEl,
@@ -64,29 +78,55 @@
     noticeForm: noticeFormEl
   };
   window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
-  function onAdsLoad(data) {
-    var ads = data.slice(0, Math.min(ADS_COUNT, data.length));
-    ads.forEach(function (ad, i) {
-      ad.id = i;
-    });
-    init(pinInitEls);
-    window.pins.renderAds(pinInitEls, ads);
-  }
-
-  function onMainMapPinDragEnd(targetCoords) {
-    window.backend.load(onAdsLoad, onError);
-  }
-
-  function onMapPinActivated(mapPin) {
-    var adId = parseInt(mapPin.dataset.id, 10);
-  }
+  window.pins.initHandlers(pinInitEls, onMapPinActivated);
+  pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
+  window.mapFilters.init(mapFiltersEl, onMapFiltersChange);
 
   function init(els) {
     els.map.classList.remove('map--faded');
     els.noticeForm.classList.remove('notice__form--disabled');
     els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
-    // var onMapPinsClick = onMapPinsClickFactory(els, onMapPinActivated);
-    // els.mapPinsContainer.addEventListener('click', onMapPinsClick);
+  }
+
+  function onAdsLoad(data) {
+    ads = data.filter(function (ad) {
+      return filter(ad, filters);
+    }).slice(0, Math.min(ADS_COUNT, data.length));
+    ads.forEach(function (ad, index) {
+      ad.id = index;
+    });
+    window.pins.renderAds(pinInitEls, ads);
+  }
+
+  function onMapFiltersChange(filtersObj) {
+    filters = window.filter.getFilters(filtersObj);
+    debouncedLoad(onAdsLoad, onError);
+  }
+
+  function onMainMapPinMouseDown() {
+    document.addEventListener('mouseup', onMainMapPinMouseUp);
+  }
+
+  function onMainMapPinMouseUp() {
+    init(pinInitEls);
+    window.backend.load(onAdsLoad, onError);
+    document.removeEventListener('mouseup', onMainMapPinMouseUp);
+  }
+
+  function onMainMapPinDragEnd(coords) {
+    addressEl.value = 'x: ' + coords.x + ', y: ' + coords.y;
+  }
+
+  function onMapPinActivated(mapPin) {
+    var adId = parseInt(mapPin.dataset.id, 10);
+    var ad = ads.find(function (a) {
+      return a.id === adId;
+    });
+    window.showCard({
+      map: pinInitEls.map,
+      mapFiltersContainer: pinInitEls.mapFiltersContainer,
+      template: mapCardTemplateEl
+    }, ad);
   }
 
   function onError(errorMessage) {
@@ -103,40 +143,4 @@
     el.textContent = errorMessage;
     document.body.insertAdjacentElement('afterbegin', el);
   }
-
-  window.mapFilters.init(mapFiltersEl, function (filter) {
-    var fff = Object.keys(filter).reduce(function (acc, cur) {
-      if (cur.startsWith('filter-')) {
-        var feature = cur.split('-')[1];
-        if (filter[cur]) {
-          if (acc.features) {
-            acc.features.push(feature);
-          } else {
-            acc.features = [feature];
-          }
-        }
-      } else if (cur.startsWith('housing-')) {
-        var housing = cur.split('-')[1];
-        if (filter[cur] !== null && filter[cur] !== 'any') {
-          acc[housing] = filter[cur];
-        }
-      }
-      return acc;
-    }, {});
-    window.backend.load(function (data) {
-      data = data.filter(function (d) {
-        var result = true;
-        result &= fff.price &&
-          PRICE_RANGES[fff.price] &&
-          d.offer.price >= PRICE_RANGES[fff.price][0] &&
-          d.offer.price <= PRICE_RANGES[fff.price][1];
-        return result;
-      });
-      var ads = data.slice(0, Math.min(ADS_COUNT, data.length));
-      ads.forEach(function (ad, i) {
-        ad.id = i;
-      });
-      window.pins.initDrag(pinInitEls, ads);
-    }, onError);
-  });
 })();
