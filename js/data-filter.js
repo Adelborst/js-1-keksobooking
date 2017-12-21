@@ -6,16 +6,6 @@
     getFilters: getFilters
   };
 
-  function getReducer(filtersObj) {
-    return function (acc, key) {
-      var filterType = key.split('-')[0];
-      var filterName = key.split('-')[1];
-      var filterValue = filtersObj[key];
-      updateFilters(acc, filterType, filterName, filterValue);
-      return acc;
-    };
-  }
-
   function updateFilters(filtersObj, filterType, filterName, filterValue) {
     if (filterType === 'filter') {
       updateFeatures(filtersObj, filterName, filterValue);
@@ -26,11 +16,7 @@
 
   function updateFeatures(acc, featureName, filterValue) {
     if (filterValue) {
-      if (acc.features) {
-        acc.features.push(featureName);
-      } else {
-        acc.features = [featureName];
-      }
+      acc.features = (acc.features || []).concat(featureName);
     }
   }
 
@@ -41,17 +27,24 @@
   }
 
   function getFilters(filtersObj) {
-    return Object.keys(filtersObj).reduce(getReducer(filtersObj), {});
+    return Object.keys(filtersObj).reduce(function (acc, key) {
+      var splitted = key.split('-');
+      var filterType = splitted[0];
+      var filterName = splitted[1];
+      var filterValue = filtersObj[key];
+      updateFilters(acc, filterType, filterName, filterValue);
+      return acc;
+    });
   }
 
   function filterFactory(filtersMaps) {
     return function () {
       var args = Array.prototype.concat.apply([filtersMaps], arguments);
-      return filter.apply(null, args);
+      return filterAd.apply(null, args);
     };
   }
 
-  function filter(filtersMaps, ad, filtersValues) {
+  function filterAd(filtersMaps, ad, filtersValues) {
     return typeof filtersValues === 'undefined' || filtersValues === null ||
       filterByType(filtersValues.type, ad.offer.type) &&
       filterByPrice(filtersValues.price, ad.offer.price, filtersMaps.priceFilterRanges) &&
