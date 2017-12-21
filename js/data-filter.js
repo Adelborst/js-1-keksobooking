@@ -34,7 +34,7 @@
       var filterValue = filtersObj[key];
       updateFilters(acc, filterType, filterName, filterValue);
       return acc;
-    });
+    }, {});
   }
 
   function filterFactory(filtersMaps) {
