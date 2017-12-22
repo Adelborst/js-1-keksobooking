@@ -23,12 +23,12 @@
 
   function closeMapCard(mapCard) {
     var activeMapPin = mapCard.parentElement.querySelector('.map__pin--active');
+    var closeBtn = mapCard.querySelector('.popup__close');
     if (activeMapPin) {
       activeMapPin.classList.remove('map__pin--active');
     }
     mapCard.parentElement.removeChild(mapCard);
     mapCard.removeEventListener('click', onClickCloseMapCard);
-    var closeBtn = mapCard.querySelector('.popup__close');
     if (closeBtn) {
       closeBtn.removeEventListener('click', onClickCloseMapCard);
     }
