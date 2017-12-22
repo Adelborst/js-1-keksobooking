@@ -131,10 +131,8 @@
     var avatarImg = mapPin.querySelector('img');
     // Taking into account the size of the element
     // so that the map pin will point to the actual location
-    var x = ad.location.x - PIN_OFFSET_X;
-    var y = ad.location.y - PIN_OFFSET_Y;
-    mapPin.style.left = x + 'px';
-    mapPin.style.top = y + 'px';
+    mapPin.style.left = ad.location.x - PIN_OFFSET_X + 'px';
+    mapPin.style.top = ad.location.y - PIN_OFFSET_Y + 'px';
     avatarImg.setAttribute('src', ad.author.avatar);
     mapPin.dataset.id = ad.id;
     return mapPin;
