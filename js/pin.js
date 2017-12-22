@@ -2,7 +2,6 @@
 
 (function () {
   var MAP_MIN_X = 0;
-  var MAP_MAX_X = null;
   var MAP_MIN_Y = 100;
   var MAP_MAX_Y = 500;
 
@@ -118,8 +117,8 @@
   function getTargetCoords(target, shift) {
     var parentRect = target.parentElement.getBoundingClientRect();
     return {
-      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X - MAIN_PIN_OFFSET_X || 0, MAP_MAX_X - MAIN_PIN_OFFSET_X || parentRect.width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y - MAIN_PIN_OFFSET_Y || 0, MAP_MAX_Y - MAIN_PIN_OFFSET_Y || parentRect.height)
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X, parentRect.width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y - MAIN_PIN_OFFSET_Y, MAP_MAX_Y - MAIN_PIN_OFFSET_Y)
     };
   }
 
