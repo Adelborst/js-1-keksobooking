@@ -28,9 +28,9 @@
     if (min > max) {
       return null;
     }
-    if (typeof min !== 'undefined' && min !== null && value < min) {
+    if (!window.utils.isEmpty(min) && value < min) {
       value = min;
-    } else if (typeof max !== 'undefined' && max !== null && value > max) {
+    } else if (!window.utils.isEmpty(max) && value > max) {
       value = max;
     }
     return value;
@@ -47,12 +47,17 @@
     };
   }
 
+  function isEmpty(value) {
+    return typeof value === 'undefined' || value === null;
+  }
+
   window.utils = {
     getRandomIntBetween: getRandomIntBetween,
     getRandomElement: getRandomElement,
     getRange: getRange,
     pullRandomElement: pullRandomElement,
     getBoundedValue: getBoundedValue,
-    debounce: debounce
+    debounce: debounce,
+    isEmpty: isEmpty,
   };
 })();

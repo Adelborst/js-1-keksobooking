@@ -23,16 +23,16 @@
   function addCommonEventListeners(xhr, onLoad, onError) {
     xhr.addEventListener('load', function () {
       if (xhr.status === 200) {
-        if (typeof onLoad !== 'undefined' && onLoad !== null) {
+        if (!window.utils.isEmpty(onLoad)) {
           onLoad(xhr.response);
         }
       } else {
-        if (typeof onError !== 'undefined' && onError !== null) {
+        if (!window.utils.isEmpty(onError)) {
           onError('Необработанный статус ' + xhr.status);
         }
       }
     });
-    if (typeof onError !== 'undefined' && onError !== null) {
+    if (!window.utils.isEmpty(onError)) {
       xhr.addEventListener('error', function () {
         onError('Ошибка');
       });

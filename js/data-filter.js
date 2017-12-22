@@ -21,7 +21,7 @@
   }
 
   function updateHousing(acc, housing, value) {
-    if (typeof value !== 'undefined' && value !== null && value !== 'any') {
+    if (!window.utils.isEmpty(value) && value !== 'any') {
       acc[housing] = value;
     }
   }
@@ -45,7 +45,7 @@
   }
 
   function filterAd(filtersMaps, ad, filtersValues) {
-    return typeof filtersValues === 'undefined' || filtersValues === null ||
+    return window.utils.isEmpty(filtersValues) ||
       filterByType(filtersValues.type, ad.offer.type) &&
       filterByPrice(filtersValues.price, ad.offer.price, filtersMaps.priceFilterRanges) &&
       filterByRooms(filtersValues.rooms, ad.offer.rooms) &&
@@ -54,20 +54,17 @@
   }
 
   function filterByType(typeFilterValue, type) {
-    return typeof typeFilterValue === 'undefined' ||
-      typeFilterValue === null ||
+    return window.utils.isEmpty(typeFilterValue) ||
       type === typeFilterValue;
   }
 
   function filterByRooms(roomsFilterValue, rooms) {
-    return typeof roomsFilterValue === 'undefined' ||
-      roomsFilterValue === null ||
+    return window.utils.isEmpty(roomsFilterValue) ||
       rooms === parseInt(roomsFilterValue, 10);
   }
 
   function filterByGuests(guestsFilterValue, guests) {
-    return typeof guestsFilterValue === 'undefined' ||
-      guestsFilterValue === null ||
+    return window.utils.isEmpty(guestsFilterValue) ||
       guests === parseInt(guestsFilterValue, 10);
   }
 
@@ -76,22 +73,22 @@
       return true;
     }
     var priceRange = priceFilterRanges[priceFilterValue];
-    if (typeof priceRange === 'undefined' || priceRange === null) {
+    if (window.utils.isEmpty(priceRange)) {
       throw new Error('Unhandled price range filter value ' + priceFilterValue);
     }
     var min = priceRange[0];
     var max = priceRange[1];
-    if (typeof min === 'undefined' || min === null) {
+    if (window.utils.isEmpty(min)) {
       throw new Error('Price range filter\'s min value is not set');
     }
-    if (typeof max === 'undefined' || max === null) {
+    if (window.utils.isEmpty(max)) {
       throw new Error('Price range filter\'s max value is not set');
     }
     return price >= min && price <= max;
   }
 
   function filterByFeatures(featuresFilterValues, features) {
-    if (typeof featuresFilterValues !== 'undefined' && featuresFilterValues !== null) {
+    if (!window.utils.isEmpty(featuresFilterValues)) {
       for (var i = 0; i < featuresFilterValues.length; i++) {
         if (!features.includes(featuresFilterValues[i])) {
           return false;

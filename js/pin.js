@@ -88,7 +88,7 @@
       evt.preventDefault();
       document.removeEventListener('mousemove', dragContext.onMouseMove);
       document.removeEventListener('mouseup', dragContext.onMouseUp);
-      if (typeof dragContext.onDragEnd !== 'undefined' && dragContext.onDragEnd !== null) {
+      if (!window.utils.isEmpty(dragContext.onDragEnd)) {
         dragContext.onDragEnd(dragContext.getFinalCoords());
       }
     };
@@ -109,7 +109,7 @@
         return;
       }
       switchActiveMapPin(mapPin);
-      if (typeof onMapPinActivated !== 'undefined' && onMapPinActivated !== null) {
+      if (!window.utils.isEmpty(onMapPinActivated)) {
         onMapPinActivated(mapPin);
       }
     };
