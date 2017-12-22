@@ -2,14 +2,15 @@
 
 (function () {
   var MAP_MIN_X = 0;
-  var MAP_MIN_Y = 120;
-  var MAP_FILTERS_HEIGHT = 46;
+  var MAP_MAX_X = null;
+  var MAP_MIN_Y = 100;
+  var MAP_MAX_Y = 500;
 
-  var MAIN_PIN_SHIFT_X = 62 / 2 + 10 / 2;
-  var MAIN_PIN_SHIFT_Y = 62 + 22;
+  var MAIN_PIN_OFFSET_X = 0;
+  var MAIN_PIN_OFFSET_Y = Math.round(62 / 2 + 22);
 
-  var PIN_SHIFT_X = 46 / 2;
-  var PIN_SHIFT_Y = 46 - 18;
+  var PIN_OFFSET_X = 0;
+  var PIN_OFFSET_Y = Math.round(44 / 2 + 18);
 
   window.pins = {
     initHandlers: initHandlers,
@@ -34,8 +35,8 @@
         // а координаты, на которые указывает метка своим острым концом.
         // Чтобы найти эту координату, нужно учесть размеры элемента с меткой.
         return {
-          x: this.targetCoords.x + MAIN_PIN_SHIFT_X,
-          y: this.targetCoords.y + MAIN_PIN_SHIFT_Y,
+          x: this.targetCoords.x + MAIN_PIN_OFFSET_X,
+          y: this.targetCoords.y + MAIN_PIN_OFFSET_Y,
         };
       }
     };
@@ -117,8 +118,8 @@
   function getTargetCoords(target, shift) {
     var parentRect = target.parentElement.getBoundingClientRect();
     return {
-      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X, parentRect.width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y, parentRect.height - MAP_FILTERS_HEIGHT)
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X - MAIN_PIN_OFFSET_X || 0, MAP_MAX_X - MAIN_PIN_OFFSET_X || parentRect.width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y - MAIN_PIN_OFFSET_Y || 0, MAP_MAX_Y - MAIN_PIN_OFFSET_Y || parentRect.height)
     };
   }
 
@@ -131,8 +132,8 @@
     var avatarImg = mapPin.querySelector('img');
     // Taking into account the size of the element
     // so that the map pin will point to the actual location
-    var x = ad.location.x - PIN_SHIFT_X;
-    var y = ad.location.y - PIN_SHIFT_Y;
+    var x = ad.location.x - PIN_OFFSET_X;
+    var y = ad.location.y - PIN_OFFSET_Y;
     mapPin.style.left = x + 'px';
     mapPin.style.top = y + 'px';
     avatarImg.setAttribute('src', ad.author.avatar);
