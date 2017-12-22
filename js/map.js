@@ -67,7 +67,6 @@
     description: descriptionEl,
     images: imagesEl,
   };
-  window.initForm(formEls, onError);
 
   var pinInitEls = {
     template: templateEl,
@@ -77,10 +76,12 @@
     mapPinsContainer: mapPinsContainerEl,
     noticeForm: noticeFormEl
   };
+  window.initForm(formEls, onError);
   window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
   window.pins.initHandlers(pinInitEls, onMapPinActivated);
-  pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
   window.mapFilters.init(mapFiltersEl, onMapFiltersChange);
+
+  pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
 
   function init(els) {
     els.map.classList.remove('map--faded');
@@ -89,12 +90,13 @@
   }
 
   function onAdsLoad(data) {
-    ads = data.filter(function (ad) {
-      return filter(ad, filters);
-    }).slice(0, Math.min(ADS_COUNT, data.length));
-    ads.forEach(function (ad, index) {
-      ad.id = index;
-    });
+    ads = data.reduce(function (acc, ad) {
+      if (acc.length < ADS_COUNT && filter(ad, filters)) {
+        ad.id = acc.length;
+        acc.push(ad);
+      }
+      return acc;
+    }, []);
     window.pins.renderAds(pinInitEls, ads);
   }
 

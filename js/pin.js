@@ -1,8 +1,21 @@
 'use strict';
 
 (function () {
+  // Выдержка из ТЗ:
+  // 3.3. Обратите внимание на то, что координаты по X и Y,
+  // соответствующие адресу, должны высчитываться не от левого верхнего угла блока с меткой,
+  // а от середины нижней границы блока (от места, куда указывает метка своим острым концом).
+  // 3.4. Чтобы метку невозможно было поставить выше горизонта или ниже панели фильтров,
+  // значение координаты Y должно быть ограничено интервалом от 100 до 500.
+
+  // По ТЗ считаем, что в пп. 3.3 и 3.4 речь идёт об одних и тех же координатах X и Y -
+  // "место, куда указывает метка своим острым концом" -
+  // Поскольку по тексту нет предпосылок считать по-другому
+  // https://ibb.co/mcYex6
+  // Если считаете, что это неправильно - исправляйте ТЗ
+  // А пока в таком предположении с таким ТЗ получается,
+  // что метка уезжает за горизонт и сильно недоезжает до фильтров
   var MAP_MIN_X = 0;
-  var MAP_MAX_X = null;
   var MAP_MIN_Y = 100;
   var MAP_MAX_Y = 500;
 
@@ -88,7 +101,7 @@
       evt.preventDefault();
       document.removeEventListener('mousemove', dragContext.onMouseMove);
       document.removeEventListener('mouseup', dragContext.onMouseUp);
-      if (typeof dragContext.onDragEnd !== 'undefined' && dragContext.onDragEnd !== null) {
+      if (!window.utils.isEmpty(dragContext.onDragEnd)) {
         dragContext.onDragEnd(dragContext.getFinalCoords());
       }
     };
@@ -109,7 +122,7 @@
         return;
       }
       switchActiveMapPin(mapPin);
-      if (typeof onMapPinActivated !== 'undefined' && onMapPinActivated !== null) {
+      if (!window.utils.isEmpty(onMapPinActivated)) {
         onMapPinActivated(mapPin);
       }
     };
@@ -118,8 +131,8 @@
   function getTargetCoords(target, shift) {
     var parentRect = target.parentElement.getBoundingClientRect();
     return {
-      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X - MAIN_PIN_OFFSET_X || 0, MAP_MAX_X - MAIN_PIN_OFFSET_X || parentRect.width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y - MAIN_PIN_OFFSET_Y || 0, MAP_MAX_Y - MAIN_PIN_OFFSET_Y || parentRect.height)
+      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X, parentRect.width),
+      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y - MAIN_PIN_OFFSET_Y, MAP_MAX_Y - MAIN_PIN_OFFSET_Y)
     };
   }
 
@@ -132,10 +145,8 @@
     var avatarImg = mapPin.querySelector('img');
     // Taking into account the size of the element
     // so that the map pin will point to the actual location
-    var x = ad.location.x - PIN_OFFSET_X;
-    var y = ad.location.y - PIN_OFFSET_Y;
-    mapPin.style.left = x + 'px';
-    mapPin.style.top = y + 'px';
+    mapPin.style.left = ad.location.x - PIN_OFFSET_X + 'px';
+    mapPin.style.top = ad.location.y - PIN_OFFSET_Y + 'px';
     avatarImg.setAttribute('src', ad.author.avatar);
     mapPin.dataset.id = ad.id;
     return mapPin;
