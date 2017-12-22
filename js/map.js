@@ -89,12 +89,13 @@
   }
 
   function onAdsLoad(data) {
-    ads = data.filter(function (ad) {
-      return filter(ad, filters);
-    }).slice(0, Math.min(ADS_COUNT, data.length));
-    ads.forEach(function (ad, index) {
-      ad.id = index;
-    });
+    ads = data.reduce(function (acc, ad) {
+      if (acc.length < ADS_COUNT && filter(ad, filters)) {
+        ad.id = acc.length;
+        acc.push(ad);
+      }
+      return acc;
+    }, []);
     window.pins.renderAds(pinInitEls, ads);
   }
 
