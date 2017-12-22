@@ -88,13 +88,8 @@
   }
 
   function filterByFeatures(featuresFilterValues, features) {
-    if (!window.utils.isEmpty(featuresFilterValues)) {
-      for (var i = 0; i < featuresFilterValues.length; i++) {
-        if (!features.includes(featuresFilterValues[i])) {
-          return false;
-        }
-      }
-    }
-    return true;
+    return window.utils.isEmpty(featuresFilterValues) || featuresFilterValues.every(function (featuresFilterValue) {
+      return features.includes(featuresFilterValue);
+    });
   }
 })();
