@@ -67,7 +67,6 @@
     description: descriptionEl,
     images: imagesEl,
   };
-  window.initForm(formEls, onError);
 
   var pinInitEls = {
     template: templateEl,
@@ -77,10 +76,12 @@
     mapPinsContainer: mapPinsContainerEl,
     noticeForm: noticeFormEl
   };
+  window.initForm(formEls, onError);
   window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
   window.pins.initHandlers(pinInitEls, onMapPinActivated);
-  pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
   window.mapFilters.init(mapFiltersEl, onMapFiltersChange);
+
+  pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
 
   function init(els) {
     els.map.classList.remove('map--faded');
