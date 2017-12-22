@@ -38,13 +38,13 @@
   };
 
   function initFormSubmission(form, onError) {
-    var initialFieldValues = {};
     var fields = form.querySelectorAll('[id]');
-    fields.forEach(function (field) {
-      initialFieldValues[field.id] = field.type === 'checkbox' ?
+    var initialFieldValues = Array.prototype.reduce.call(fields, function (acc, field) {
+      acc[field.id] = field.type === 'checkbox' ?
         field.checked :
         field.value;
-    });
+      return acc;
+    }, {});
     var onFormSubmit = onFormSubmitFactory(initialFieldValues, onError);
     form.addEventListener('submit', onFormSubmit);
   }

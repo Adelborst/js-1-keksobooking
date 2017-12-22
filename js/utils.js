@@ -36,11 +36,23 @@
     return value;
   }
 
+  function debounce(func, timeout) {
+    var timeoutId;
+    return function () {
+      var args = arguments;
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(function () {
+        func.apply(null, args);
+      }, timeout);
+    };
+  }
+
   window.utils = {
     getRandomIntBetween: getRandomIntBetween,
     getRandomElement: getRandomElement,
     getRange: getRange,
     pullRandomElement: pullRandomElement,
-    getBoundedValue: getBoundedValue
+    getBoundedValue: getBoundedValue,
+    debounce: debounce
   };
 })();
