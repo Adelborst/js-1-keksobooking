@@ -145,7 +145,8 @@
     var featuresCount = window.utils.getRandomIntBetween(0, FEATURES.length);
     var featuresIndexRange = window.utils.getRange(0, featuresCount - 1);
     for (var i = 0; i < featuresCount; i++) {
-      features[i] = FEATURES[window.utils.pullRandomElement(featuresIndexRange)];
+      var featureIndex = window.utils.pullRandomElement(featuresIndexRange);
+      features[i] = FEATURES[featureIndex];
     }
     return features.sort();
   }
