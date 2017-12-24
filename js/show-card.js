@@ -58,7 +58,6 @@
     if (closeBtnEl) {
       closeBtnEl.addEventListener('click', onClickCloseMapCard);
     }
-    return mapCardEl;
   }
 
   function setFeaturesVisibility(featuresListItemsEls, features) {
