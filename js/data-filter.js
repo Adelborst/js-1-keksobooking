@@ -28,9 +28,9 @@
 
   function getFilters(filtersObj) {
     return Object.keys(filtersObj).reduce(function (acc, key) {
-      var splitted = key.split('-');
-      var filterType = splitted[0];
-      var filterName = splitted[1];
+      var keyParts = key.split('-');
+      var filterType = keyParts[0];
+      var filterName = keyParts[1];
       var filterValue = filtersObj[key];
       updateFilters(acc, filterType, filterName, filterValue);
       return acc;
