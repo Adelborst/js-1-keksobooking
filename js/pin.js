@@ -108,68 +108,68 @@
   }
 
   function renderAds(els, ads) {
-    var mapPins = ads.map(function (ad) {
+    var mapPinsEls = ads.map(function (ad) {
       return initMapPinEl(cloneMapPinEl(els.template), ad);
     });
-    renderMapPins(els.mapPinsContainer, mapPins);
+    renderMapPins(els.mapPinsContainer, mapPinsEls);
   }
 
   function onMapPinsClickFactory(els, onMapPinActivated) {
     return function (evt) {
-      var mapPin = evt.target.closest('.map__pin');
-      if (!mapPin || mapPin.classList.contains('map__pin--main')) {
+      var mapPinEl = evt.target.closest('.map__pin');
+      if (!mapPinEl || mapPinEl.classList.contains('map__pin--main')) {
         return;
       }
-      switchActiveMapPin(mapPin);
+      switchActiveMapPin(mapPinEl);
       if (!window.utils.isEmpty(onMapPinActivated)) {
-        onMapPinActivated(mapPin);
+        onMapPinActivated(mapPinEl);
       }
     };
   }
 
-  function getTargetCoords(target, shift) {
-    var parentRect = target.parentElement.getBoundingClientRect();
+  function getTargetCoords(targetEl, shift) {
+    var parentRect = targetEl.parentElement.getBoundingClientRect();
     return {
-      x: window.utils.getBoundedValue(target.offsetLeft - shift.x, MAP_MIN_X, parentRect.width),
-      y: window.utils.getBoundedValue(target.offsetTop - shift.y, MAP_MIN_Y - MAIN_PIN_OFFSET_Y, MAP_MAX_Y - MAIN_PIN_OFFSET_Y)
+      x: window.utils.getBoundedValue(targetEl.offsetLeft - shift.x, MAP_MIN_X, parentRect.width),
+      y: window.utils.getBoundedValue(targetEl.offsetTop - shift.y, MAP_MIN_Y - MAIN_PIN_OFFSET_Y, MAP_MAX_Y - MAIN_PIN_OFFSET_Y)
     };
   }
 
-  function cloneMapPinEl(template) {
-    var mapPinTemplate = template.querySelector('.map__pin');
-    return mapPinTemplate.cloneNode(true);
+  function cloneMapPinEl(templateEl) {
+    var mapPinTemplateEl = templateEl.querySelector('.map__pin');
+    return mapPinTemplateEl.cloneNode(true);
   }
 
-  function initMapPinEl(mapPin, ad) {
-    var avatarImg = mapPin.querySelector('img');
-    mapPin.style.left = ad.location.x - PIN_OFFSET_X + 'px';
-    mapPin.style.top = ad.location.y - PIN_OFFSET_Y + 'px';
-    avatarImg.setAttribute('src', ad.author.avatar);
-    mapPin.dataset.id = ad.id;
-    return mapPin;
+  function initMapPinEl(mapPinEl, ad) {
+    var avatarImgEl = mapPinEl.querySelector('img');
+    mapPinEl.style.left = ad.location.x - PIN_OFFSET_X + 'px';
+    mapPinEl.style.top = ad.location.y - PIN_OFFSET_Y + 'px';
+    avatarImgEl.setAttribute('src', ad.author.avatar);
+    mapPinEl.dataset.id = ad.id;
+    return mapPinEl;
   }
 
-  function renderMapPins(mapPinsContainer, mapPins) {
+  function renderMapPins(mapPinsContainerEl, mapPinsEls) {
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < mapPins.length; i++) {
-      fragment.appendChild(mapPins[i]);
+    for (var i = 0; i < mapPinsEls.length; i++) {
+      fragment.appendChild(mapPinsEls[i]);
     }
-    removeExistingMapPins(mapPinsContainer);
-    mapPinsContainer.appendChild(fragment);
+    removeExistingMapPins(mapPinsContainerEl);
+    mapPinsContainerEl.appendChild(fragment);
   }
 
-  function removeExistingMapPins(mapPinsContainer) {
-    var existingMapPins = mapPinsContainer.querySelectorAll('.map__pin:not(.map__pin--main)');
-    for (var j = 0; j < existingMapPins.length; j++) {
-      mapPinsContainer.removeChild(existingMapPins[j]);
+  function removeExistingMapPins(mapPinsContainerEl) {
+    var existingMapPinsEls = mapPinsContainerEl.querySelectorAll('.map__pin:not(.map__pin--main)');
+    for (var j = 0; j < existingMapPinsEls.length; j++) {
+      mapPinsContainerEl.removeChild(existingMapPinsEls[j]);
     }
   }
 
-  function switchActiveMapPin(mapPin) {
-    var activeMapPin = mapPin.parentNode.querySelector('.map__pin--active');
-    if (activeMapPin) {
-      activeMapPin.classList.remove('map__pin--active');
+  function switchActiveMapPin(mapPinEl) {
+    var activeMapPinEl = mapPinEl.parentNode.querySelector('.map__pin--active');
+    if (activeMapPinEl) {
+      activeMapPinEl.classList.remove('map__pin--active');
     }
-    mapPin.classList.add('map__pin--active');
+    mapPinEl.classList.add('map__pin--active');
   }
 })();

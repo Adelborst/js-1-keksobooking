@@ -58,13 +58,13 @@
   function onFormSubmitFactory(onLoad, onError) {
     return function (evt) {
       evt.preventDefault();
-      var form = evt.target;
-      window.backend.save(new FormData(form), onLoad, onError);
+      var formEl = evt.target;
+      window.backend.save(new FormData(formEl), onLoad, onError);
     };
   }
 
-  function initNotifyOnInvalidInput(form) {
-    form.addEventListener('invalid', function (evt) {
+  function initNotifyOnInvalidInput(formEl) {
+    formEl.addEventListener('invalid', function (evt) {
       evt.target.style.borderColor = 'red';
     });
   }
@@ -90,17 +90,17 @@
       select.children[i].disabled = !~optionsValues.indexOf(optionValue);
     }
     if (select.children[select.selectedIndex].hasAttribute('disabled')) {
-      var enabledOption = select.querySelector('option:not([disabled])');
-      select.selectedIndex = Array.prototype.indexOf.call(select.children, enabledOption);
+      var enabledOptionEl = select.querySelector('option:not([disabled])');
+      select.selectedIndex = Array.prototype.indexOf.call(select.children, enabledOptionEl);
     }
   }
 
-  function syncValue(element, value) {
-    element.value = value;
+  function syncValue(el, value) {
+    el.value = value;
   }
 
-  function syncMin(element, value) {
-    element.min = value;
-    element.value = Math.max(element.value, element.min);
+  function syncMin(el, value) {
+    el.min = value;
+    el.value = Math.max(el.value, el.min);
   }
 })();

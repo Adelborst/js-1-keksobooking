@@ -88,8 +88,9 @@
   }
 
   function filterByFeatures(featuresFilterValues, features) {
-    return window.utils.isEmpty(featuresFilterValues) || featuresFilterValues.every(function (featuresFilterValue) {
-      return features.includes(featuresFilterValue);
-    });
+    return window.utils.isEmpty(featuresFilterValues) ||
+      featuresFilterValues.every(function (featuresFilterValue) {
+        return features.includes(featuresFilterValue);
+      });
   }
 })();

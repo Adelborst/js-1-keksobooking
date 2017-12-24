@@ -25,14 +25,10 @@
   }
 
   function getFieldsIdToValue(fields) {
-    var filters = {};
-    var arr = Array.from(fields);
-    arr.map(function (field) {
-      return [field.id, getFieldValue(field)];
-    }).forEach(function (tuple) {
-      filters[tuple[0]] = tuple[1];
-    });
-    return filters;
+    return fields.reduce(function (acc, field) {
+      acc[field.id] = getFieldValue(field);
+      return acc;
+    }, {});
   }
 
   function getFieldValue(field) {
