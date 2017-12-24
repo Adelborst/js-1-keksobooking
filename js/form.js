@@ -71,7 +71,8 @@
 
   function initSyncRoomNumberWithCapacity(roomNumberInput, capacityInput, roomNumberValues, capacityValues) {
     var currentValueIndex = roomNumberValues.indexOf(roomNumberInput.value);
-    initSelect(capacityInput, capacityValues[currentValueIndex]);
+    var availableOptionsValues = capacityValues[currentValueIndex];
+    initSelect(capacityInput, availableOptionsValues);
     window.synchronizeFields(roomNumberInput, capacityInput, roomNumberValues, capacityValues, initSelect);
   }
 
@@ -84,14 +85,15 @@
     window.synchronizeFields(timeOutInput, timeInInput, timeOutValues, timeInValues, syncValue);
   }
 
-  function initSelect(select, optionsValues) {
-    for (var i = 0; i < select.childElementCount; i++) {
-      var optionValue = parseInt(select.children[i].value, 10);
-      select.children[i].disabled = !~optionsValues.indexOf(optionValue);
-    }
-    if (select.children[select.selectedIndex].hasAttribute('disabled')) {
-      var enabledOptionEl = select.querySelector('option:not([disabled])');
-      select.selectedIndex = Array.prototype.indexOf.call(select.children, enabledOptionEl);
+  function initSelect(selectEl, availableOptionsValues) {
+    var optionsEls = Array.from(selectEl.children);
+    optionsEls.forEach(function (optionEl) {
+      var optionValue = parseInt(optionEl.value, 10);
+      optionEl.disabled = !~availableOptionsValues.indexOf(optionValue);
+    });
+    if (selectEl.children[selectEl.selectedIndex].disabled) {
+      var enabledOptionEl = selectEl.querySelector('option:not([disabled])');
+      selectEl.selectedIndex = optionsEls.indexOf(enabledOptionEl);
     }
   }
 

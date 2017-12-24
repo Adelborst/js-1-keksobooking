@@ -61,11 +61,11 @@
   }
 
   function setFeaturesVisibility(featuresListItemsEls, features) {
-    for (var i = 0; i < featuresListItemsEls.length; i++) {
+    featuresListItemsEls.forEach(function (featuresListItemEl) {
       var feature = features.find(function (feat) {
-        return featuresListItemsEls[i].classList.contains('feature--' + feat);
+        return featuresListItemEl.classList.contains('feature--' + feat);
       });
-      featuresListItemsEls[i].style.display = feature ? null : 'none';
-    }
+      featuresListItemEl.style.display = feature ? null : 'none';
+    });
   }
 })();
