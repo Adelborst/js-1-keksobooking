@@ -76,12 +76,14 @@
     mapPinsContainer: mapPinsContainerEl,
     noticeForm: noticeFormEl
   };
-  window.initForm(formEls, onError);
+  window.form.init(formEls, onFormSubmitLoad, onError);
   window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
   window.pins.initHandlers(pinInitEls, onMapPinActivated);
   window.mapFilters.init(mapFiltersEl, onMapFiltersChange);
 
   pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
+
+  var resetForm = resetFormFactory(noticeFormEl);
 
   function init(els) {
     els.map.classList.remove('map--faded');
@@ -129,6 +131,45 @@
       mapFiltersContainer: pinInitEls.mapFiltersContainer,
       template: mapCardTemplateEl
     }, ad);
+  }
+
+  function onFormSubmitLoad() {
+    resetForm();
+  }
+
+  function resetFormFactory(form) {
+    var formResetCtx = getFormResetContext(form);
+    return function () {
+      Object.keys(formResetCtx).forEach(function (id) {
+        var fieldResetCtx = formResetCtx[id];
+        if (fieldResetCtx.field.type === 'checkbox') {
+          fieldResetCtx.field.checked = fieldResetCtx.checked;
+        } else if (fieldResetCtx.field.type === 'select') {
+          fieldResetCtx.field.selectedIndex = fieldResetCtx.selectedIndex;
+        } else {
+          fieldResetCtx.field.value = fieldResetCtx.value;
+        }
+        if (!window.utils.isEmpty(fieldResetCtx.min)) {
+          fieldResetCtx.field.min = fieldResetCtx.min;
+        }
+      });
+    };
+  }
+
+  function getFormResetContext(form) {
+    var fields = form.querySelectorAll('[id]');
+    var formResetCtx = Array.prototype.reduce.call(fields, function (acc, field) {
+      acc[field.id] = {
+        field: field,
+        value: field.value,
+        checked: field.checked,
+        min: field.min,
+        selectedIndex: field.selectedIndex
+      };
+      return acc;
+    }, {});
+    delete formResetCtx['address'];
+    return formResetCtx;
   }
 
   function onError(errorMessage) {

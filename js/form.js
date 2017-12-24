@@ -29,48 +29,30 @@
     '14:00': '14:00'
   };
 
-  window.initForm = function (els, onError) {
+  window.form = {
+    init: initForm
+  };
+
+  function initForm(els, onLoad, onError) {
     initSyncTimeInAndTimeOut(els.timeIn, els.timeOut, Object.keys(CHECKIN_CHECKOUT_MAP), Object.values(CHECKIN_CHECKOUT_MAP));
     initSyncTypeWithMinPrice(els.type, els.price, Object.keys(TYPE_TO_MIN_PRICE_MAP), Object.values(TYPE_TO_MIN_PRICE_MAP));
     initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity, Object.keys(ROOM_NUMBER_TO_CAPACITIES_MAP), Object.values(ROOM_NUMBER_TO_CAPACITIES_MAP));
     initNotifyOnInvalidInput(els.noticeForm);
-    initFormSubmission(els.noticeForm, onError);
-  };
+    initFormSubmission(els.noticeForm, onLoad, onError);
+  }
 
-  function initFormSubmission(form, onError) {
-    var fields = form.querySelectorAll('[id]');
-    var initialFieldValues = Array.prototype.reduce.call(fields, function (acc, field) {
-      acc[field.id] = field.type === 'checkbox' ?
-        field.checked :
-        field.value;
-      return acc;
-    }, {});
-    var onFormSubmit = onFormSubmitFactory(initialFieldValues, onError);
+  function initFormSubmission(form) {
+    var restArgs = Array.prototype.slice.call(arguments, 1);
+    var onFormSubmit = onFormSubmitFactory.apply(null, restArgs);
     form.addEventListener('submit', onFormSubmit);
   }
 
-  function onFormSubmitFactory(initialFieldValues, onLoad, onError) {
+  function onFormSubmitFactory(onLoad, onError) {
     return function (evt) {
       evt.preventDefault();
       var form = evt.target;
-      window.backend.save(new FormData(form), function () {
-        resetForm(form, initialFieldValues);
-      }, onError);
+      window.backend.save(new FormData(form), onLoad, onError);
     };
-  }
-
-  function resetForm(form, initialFieldValues) {
-    Object.keys(initialFieldValues).forEach(function (id) {
-      var field = form.querySelector('#' + id);
-      if (!field || field.id === 'address') {
-        return;
-      }
-      if (field.type === 'checkbox') {
-        field.checked = initialFieldValues[id];
-      } else {
-        field.value = initialFieldValues[id];
-      }
-    });
   }
 
   function initNotifyOnInvalidInput(form) {
