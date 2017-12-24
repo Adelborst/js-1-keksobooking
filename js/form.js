@@ -62,7 +62,7 @@
   function resetForm(form, initialFieldValues) {
     Object.keys(initialFieldValues).forEach(function (id) {
       var field = form.querySelector('#' + id);
-      if (!field) {
+      if (!field || field.id === 'address') {
         return;
       }
       if (field.type === 'checkbox') {
