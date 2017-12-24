@@ -102,103 +102,103 @@
 
       <fieldset class="form__element form__element--wide">
         <label for="title">Заголовок объявления</label>
-        <input id="title" name="title" type="text" placeholder="Милая, уютная квартирка в центре Токио" required minlength="30" maxlength="100">
+        <input id="title" name="title" type="text" placeholder="Милая, уютная квартирка в центре Токио" required disabled minlength="30" maxlength="100">
       </fieldset>
 
       <fieldset class="form__element form__element--wide">
         <label for="address">Адрес</label>
-        <input id="address" name="address" type="text" required readonly>
+        <input id="address" name="address" type="text" required readonly disabled>
       </fieldset>
 
       <fieldset class="form__element">
         <label for="type">Тип жилья</label>
         <select id="type" name="type">
-          <option value="flat" selected>Квартира</option>
-          <option value="bungalo">Лачуга</option>
-          <option value="house">Дом</option>
-          <option value="palace">Дворец</option>
+          <option value="flat" selected disabled>Квартира</option>
+          <option value="bungalo" disabled>Лачуга</option>
+          <option value="house" disabled>Дом</option>
+          <option value="palace" disabled>Дворец</option>
         </select>
       </fieldset>
 
       <fieldset class="form__element">
         <label for="price">Цена за ночь, руб.</label>
-        <input id="price" name="price" type="number" placeholder="5000" required min="0" value="1000" max="1000000">
+        <input id="price" name="price" type="number" placeholder="5000" required min="0" value="1000" max="1000000" disabled>
       </fieldset>
 
       <fieldset class="form__element">
         <label for="timein">Время заезда и выезда</label>
         <select id="timein" name="timein">
-          <option value="12:00" selected>После 12</option>
-          <option value="13:00">После 13</option>
-          <option value="14:00">После 14</option>
+          <option value="12:00" selected disabled>После 12</option>
+          <option value="13:00" disabled>После 13</option>
+          <option value="14:00" disabled>После 14</option>
         </select>
         <select id="timeout" name="timeout" title="Time to go out">
-          <option value="12:00" selected>Выезд до 12</option>
-          <option value="13:00">Выезд до 13</option>
-          <option value="14:00">Выезд до 14</option>
+          <option value="12:00" selected disabled>Выезд до 12</option>
+          <option value="13:00" disabled>Выезд до 13</option>
+          <option value="14:00" disabled>Выезд до 14</option>
         </select>
       </fieldset>
 
       <fieldset class="form__element">
         <label for="room_number">Кол-во комнат</label>
         <select id="room_number" name="rooms">
-          <option value="1" selected>1 комната</option>
-          <option value="2">2 комнаты</option>
-          <option value="3">3 комнаты</option>
-          <option value="100">100 комнат</option>
+          <option value="1" selected disabled>1 комната</option>
+          <option value="2" disabled>2 комнаты</option>
+          <option value="3" disabled>3 комнаты</option>
+          <option value="100" disabled>100 комнат</option>
         </select>
       </fieldset>
 
       <fieldset class="form__element">
         <label for="capacity">Количество мест</label>
         <select id="capacity" name="capacity">
-          <option value="3" selected>для 3 гостей</option>
-          <option value="2">для 2 гостей</option>
-          <option value="1">для 1 гостя</option>
-          <option value="0">не для гостей</option>
+          <option value="3" selected disabled>для 3 гостей</option>
+          <option value="2" disabled>для 2 гостей</option>
+          <option value="1" disabled>для 1 гостя</option>
+          <option value="0" disabled>не для гостей</option>
         </select>
       </fieldset>
 
       <fieldset class="form__element features form__element--wide">
         <legend>Удобства: Wi-Fi, кухня, парковка, стиралка, лифт, кондиционер</legend>
 
-        <input type="checkbox" name="features" value="wifi" id="feature-wifi">
+        <input type="checkbox" name="features" value="wifi" id="feature-wifi" disabled>
         <label class="feature feature--wifi" for="feature-wifi">Wi-Fi</label>
 
-        <input type="checkbox" name="features" value="dishwasher" id="feature-dishwasher">
+        <input type="checkbox" name="features" value="dishwasher" id="feature-dishwasher" disabled>
         <label class="feature feature--dishwasher" for="feature-dishwasher">Посудомоечная машина</label>
 
-        <input type="checkbox" name="features" value="parking" id="feature-parking">
+        <input type="checkbox" name="features" value="parking" id="feature-parking" disabled>
         <label class="feature feature--parking" for="feature-parking">Парковка</label>
 
-        <input type="checkbox" name="features" value="washer" id="feature-washer">
+        <input type="checkbox" name="features" value="washer" id="feature-washer" disabled>
         <label class="feature feature--washer" for="feature-washer">Стиральная машина</label>
 
-        <input type="checkbox" name="features" value="elevator" id="feature-elevator">
+        <input type="checkbox" name="features" value="elevator" id="feature-elevator" disabled>
         <label class="feature feature--elevator" for="feature-elevator">Лифт</label>
 
-        <input type="checkbox" name="features" value="conditioner" id="feature-conditioner">
+        <input type="checkbox" name="features" value="conditioner" id="feature-conditioner" disabled>
         <label class="feature feature--conditioner" for="feature-conditioner">Кондиционер</label>
       </fieldset>
 
       <fieldset class="form__element form__element--wide">
         <label for="description">Описание (не обязательно)</label>
-        <textarea id="description" name="description" placeholder="Здесь расскажите о том, какое ваше жилье замечательное и вообще"></textarea>
+        <textarea id="description" name="description" placeholder="Здесь расскажите о том, какое ваше жилье замечательное и вообще" disabled></textarea>
       </fieldset>
 
       <fieldset class="form__element form__element--wide">
         <label>Фотографии жилья</label>
         <div class="form__photo-container">
           <div class="upload">
-            <input type="file" id="images">
+            <input type="file" id="images" disabled>
             <label for="images" class="drop-zone">Загрузите или&nbsp;перетащите сюда фото</label>
           </div>
         </div>
       </fieldset>
 
       <fieldset class="form__element form__element--submit">
-        <button class="form__submit" type="submit">Опубликовать</button>
-        или <button class="form__reset" type="reset">очистить</button>
+        <button class="form__submit" type="submit" disabled>Опубликовать</button>
+        или <button class="form__reset" type="reset" disabled>очистить</button>
       </fieldset>
     </form>
   </div>

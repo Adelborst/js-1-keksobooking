@@ -34,11 +34,19 @@
   };
 
   function initForm(els, onLoad, onError) {
+    enableFormFields(els.noticeForm);
     initSyncTimeInAndTimeOut(els.timeIn, els.timeOut, Object.keys(CHECKIN_CHECKOUT_MAP), Object.values(CHECKIN_CHECKOUT_MAP));
     initSyncTypeWithMinPrice(els.type, els.price, Object.keys(TYPE_TO_MIN_PRICE_MAP), Object.values(TYPE_TO_MIN_PRICE_MAP));
     initSyncRoomNumberWithCapacity(els.roomNumber, els.capacity, Object.keys(ROOM_NUMBER_TO_CAPACITIES_MAP), Object.values(ROOM_NUMBER_TO_CAPACITIES_MAP));
     initNotifyOnInvalidInput(els.noticeForm);
     initFormSubmission(els.noticeForm, onLoad, onError);
+  }
+
+  function enableFormFields(form) {
+    var disabledEls = form.querySelectorAll('[disabled]');
+    disabledEls.forEach(function (disabledEl) {
+      disabledEl.disabled = false;
+    });
   }
 
   function initFormSubmission(form) {

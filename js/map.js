@@ -76,19 +76,20 @@
     mapPinsContainer: mapPinsContainerEl,
     noticeForm: noticeFormEl
   };
-  window.form.init(formEls, onFormSubmitLoad, onError);
   window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
   window.pins.initHandlers(pinInitEls, onMapPinActivated);
   window.mapFilters.init(mapFiltersEl, onMapFiltersChange);
 
   pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
 
-  var resetForm = resetFormFactory(noticeFormEl);
+  var resetForm;
 
   function init(els) {
     els.map.classList.remove('map--faded');
     els.noticeForm.classList.remove('notice__form--disabled');
     els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
+    window.form.init(formEls, onFormSubmitLoad, onError);
+    resetForm = resetFormFactory(els.noticeForm);
   }
 
   function onAdsLoad(data) {
@@ -134,7 +135,9 @@
   }
 
   function onFormSubmitLoad() {
-    resetForm();
+    if (!window.utils.isEmpty(resetForm)) {
+      resetForm();
+    }
   }
 
   function resetFormFactory(form) {
