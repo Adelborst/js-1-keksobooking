@@ -3,6 +3,7 @@
 (function () {
   var LOAD_URL = 'https://1510.dump.academy/keksobooking/data';
   var SAVE_URL = 'https://1510.dump.academy/keksobooking';
+  var STATUS_OK = 200;
 
   function load(onLoad, onError) {
     var xhr = new XMLHttpRequest();
@@ -22,7 +23,7 @@
 
   function addCommonEventListeners(xhr, onLoad, onError) {
     xhr.addEventListener('load', function () {
-      if (xhr.status === 200) {
+      if (xhr.status === STATUS_OK) {
         if (!window.utils.isEmpty(onLoad)) {
           onLoad(xhr.response);
         }
