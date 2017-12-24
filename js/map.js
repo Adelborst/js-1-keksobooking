@@ -4,13 +4,13 @@
   var ADS_COUNT = 5;
   var DEBOUNCE_TIMEOUT = 500;
 
-  var debouncedLoad = window.utils.debounce(window.backend.load, DEBOUNCE_TIMEOUT);
-
   var PRICE_FILTER_RANGES = {
     'low': [0, 10000],
     'middle': [10000, 50000],
     'high': [50000, +Infinity]
   };
+
+  var debouncedLoad = window.utils.debounce(window.backend.load, DEBOUNCE_TIMEOUT);
 
   var filter = window.filter.filterFactory({
     priceFilterRanges: PRICE_FILTER_RANGES
