@@ -117,7 +117,6 @@
   function onMapPinsClickFactory(els, onMapPinActivated) {
     return function (evt) {
       var mapPin = evt.target.closest('.map__pin');
-      // ignore clicks on elements other than regular map pins
       if (!mapPin || mapPin.classList.contains('map__pin--main')) {
         return;
       }
@@ -143,8 +142,6 @@
 
   function initMapPinEl(mapPin, ad) {
     var avatarImg = mapPin.querySelector('img');
-    // Taking into account the size of the element
-    // so that the map pin will point to the actual location
     mapPin.style.left = ad.location.x - PIN_OFFSET_X + 'px';
     mapPin.style.top = ad.location.y - PIN_OFFSET_Y + 'px';
     avatarImg.setAttribute('src', ad.author.avatar);
