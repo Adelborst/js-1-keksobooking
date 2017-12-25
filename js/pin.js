@@ -151,18 +151,18 @@
 
   function renderMapPins(mapPinsContainerEl, mapPinsEls) {
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < mapPinsEls.length; i++) {
-      fragment.appendChild(mapPinsEls[i]);
-    }
+    mapPinsEls.forEach(function (mapPinEl) {
+      fragment.appendChild(mapPinEl);
+    });
     removeExistingMapPins(mapPinsContainerEl);
     mapPinsContainerEl.appendChild(fragment);
   }
 
   function removeExistingMapPins(mapPinsContainerEl) {
     var existingMapPinsEls = mapPinsContainerEl.querySelectorAll('.map__pin:not(.map__pin--main)');
-    for (var j = 0; j < existingMapPinsEls.length; j++) {
-      mapPinsContainerEl.removeChild(existingMapPinsEls[j]);
-    }
+    existingMapPinsEls.forEach(function (mapPinEl) {
+      mapPinsContainerEl.removeChild(mapPinEl);
+    });
   }
 
   function switchActiveMapPin(mapPinEl) {

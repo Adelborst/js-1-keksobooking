@@ -69,7 +69,7 @@
   }
 
   function filterByPrice(priceFilterValue, price, priceFilterRanges) {
-    if (!priceFilterValue) {
+    if (window.utils.isEmpty(priceFilterValue)) {
       return true;
     }
     var priceRange = priceFilterRanges[priceFilterValue];

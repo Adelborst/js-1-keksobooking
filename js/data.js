@@ -64,7 +64,7 @@
     for (var i = 0; i < count; i++) {
       var userId = window.utils.pullRandomElement(userIdRange);
       var titleIndex = window.utils.pullRandomElement(titleIndexRange);
-      ads[i] = generateAd(i, userId, titleIndex);
+      ads.push(generateAd(i, userId, titleIndex));
     }
     return ads;
   };
@@ -146,7 +146,7 @@
     var featuresIndexRange = window.utils.getRange(0, featuresCount - 1);
     for (var i = 0; i < featuresCount; i++) {
       var featureIndex = window.utils.pullRandomElement(featuresIndexRange);
-      features[i] = FEATURES[featureIndex];
+      features.push(FEATURES[featureIndex]);
     }
     return features.sort();
   }

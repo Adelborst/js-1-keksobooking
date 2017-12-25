@@ -88,6 +88,8 @@
   function initSelect(selectEl, availableOptionsValues) {
     var optionsEls = Array.from(selectEl.children);
     optionsEls.forEach(function (optionEl) {
+      // Здесь parseInt применяется к значению option, находящегося под select,
+      // а не к значениям ROOM_NUMBER_TO_CAPACITIES_MAP, прокинутым извне
       var optionValue = parseInt(optionEl.value, 10);
       optionEl.disabled = !~availableOptionsValues.indexOf(optionValue);
     });
