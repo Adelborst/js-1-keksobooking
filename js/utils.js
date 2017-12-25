@@ -26,7 +26,7 @@
 
   function getBoundedValue(value, min, max) {
     if (min > max) {
-      return null;
+      throw new Error('min value ' + min + ' is greater than max value' + max);
     }
     if (!window.utils.isEmpty(min) && value < min) {
       value = min;
