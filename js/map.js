@@ -47,7 +47,7 @@
   var descriptionEl = noticeFormEl.querySelector('#description');
   var imagesEl = noticeFormEl.querySelector('#images');
 
-  var formEls = {
+  var noticeFormEls = {
     noticeForm: noticeFormEl,
     avatar: avatarEl,
     title: titleEl,
@@ -79,17 +79,14 @@
   window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
   window.pins.initHandlers(pinInitEls, onMapPinActivated);
   window.mapFilters.init(mapFiltersEl, onMapFiltersChange);
+  window.form.init(noticeFormEls, onFormSubmitLoad, onError);
 
   pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
 
-  var resetForm;
+  var resetForm = window.form.resetFormFactory(noticeFormEls);
 
   function init(els) {
     els.map.classList.remove('map--faded');
-    els.noticeForm.classList.remove('notice__form--disabled');
-    els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
-    window.form.init(formEls, onFormSubmitLoad, onError);
-    resetForm = resetFormFactory(els.noticeForm);
   }
 
   function onAdsLoad(data) {
@@ -114,6 +111,7 @@
 
   function onMainMapPinMouseUp() {
     init(pinInitEls);
+    window.form.enable(noticeFormEls);
     window.backend.load(onAdsLoad, onError);
     document.removeEventListener('mouseup', onMainMapPinMouseUp);
   }
@@ -138,41 +136,6 @@
     if (!window.utils.isEmpty(resetForm)) {
       resetForm();
     }
-  }
-
-  function resetFormFactory(form) {
-    var formResetCtx = getFormResetContext(form);
-    return function () {
-      Object.keys(formResetCtx).forEach(function (id) {
-        var fieldResetCtx = formResetCtx[id];
-        if (fieldResetCtx.field.type === 'checkbox') {
-          fieldResetCtx.field.checked = fieldResetCtx.checked;
-        } else if (fieldResetCtx.field.type === 'select') {
-          fieldResetCtx.field.selectedIndex = fieldResetCtx.selectedIndex;
-        } else {
-          fieldResetCtx.field.value = fieldResetCtx.value;
-        }
-        if (!window.utils.isEmpty(fieldResetCtx.min)) {
-          fieldResetCtx.field.min = fieldResetCtx.min;
-        }
-      });
-    };
-  }
-
-  function getFormResetContext(form) {
-    var fields = form.querySelectorAll('[id]');
-    var formResetCtx = Array.prototype.reduce.call(fields, function (acc, field) {
-      acc[field.id] = {
-        field: field,
-        value: field.value,
-        checked: field.checked,
-        min: field.min,
-        selectedIndex: field.selectedIndex
-      };
-      return acc;
-    }, {});
-    delete formResetCtx['address'];
-    return formResetCtx;
   }
 
   function onError(errorMessage) {
