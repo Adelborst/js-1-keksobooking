@@ -2,7 +2,8 @@
 
 (function () {
   window.synchronizeFields = function (srcField) {
-    var onChange = onChangeFactory.apply(null, Array.prototype.slice.call(arguments, 1));
+    var restArgs = Array.prototype.slice.call(arguments, 1);
+    var onChange = onChangeFactory.apply(null, restArgs);
     srcField.addEventListener('change', onChange);
   };
 

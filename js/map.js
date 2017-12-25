@@ -4,13 +4,13 @@
   var ADS_COUNT = 5;
   var DEBOUNCE_TIMEOUT = 500;
 
-  var debouncedLoad = window.utils.debounce(window.backend.load, DEBOUNCE_TIMEOUT);
-
   var PRICE_FILTER_RANGES = {
     'low': [0, 10000],
     'middle': [10000, 50000],
     'high': [50000, +Infinity]
   };
+
+  var debouncedLoad = window.utils.debounce(window.backend.load, DEBOUNCE_TIMEOUT);
 
   var filter = window.filter.filterFactory({
     priceFilterRanges: PRICE_FILTER_RANGES
@@ -47,7 +47,7 @@
   var descriptionEl = noticeFormEl.querySelector('#description');
   var imagesEl = noticeFormEl.querySelector('#images');
 
-  var formEls = {
+  var noticeFormEls = {
     noticeForm: noticeFormEl,
     avatar: avatarEl,
     title: titleEl,
@@ -76,17 +76,17 @@
     mapPinsContainer: mapPinsContainerEl,
     noticeForm: noticeFormEl
   };
-  window.initForm(formEls, onError);
   window.pins.initDrag(pinInitEls, onMainMapPinDragEnd);
   window.pins.initHandlers(pinInitEls, onMapPinActivated);
   window.mapFilters.init(mapFiltersEl, onMapFiltersChange);
+  window.form.init(noticeFormEls, onFormSubmitLoad, onError);
 
   pinInitEls.mapPinMain.addEventListener('mousedown', onMainMapPinMouseDown);
 
+  var resetForm = window.form.resetFormFactory(noticeFormEls);
+
   function init(els) {
     els.map.classList.remove('map--faded');
-    els.noticeForm.classList.remove('notice__form--disabled');
-    els.noticeForm.querySelector('.notice__header').removeAttribute('disabled');
   }
 
   function onAdsLoad(data) {
@@ -111,6 +111,7 @@
 
   function onMainMapPinMouseUp() {
     init(pinInitEls);
+    window.form.enable(noticeFormEls);
     window.backend.load(onAdsLoad, onError);
     document.removeEventListener('mouseup', onMainMapPinMouseUp);
   }
@@ -129,6 +130,12 @@
       mapFiltersContainer: pinInitEls.mapFiltersContainer,
       template: mapCardTemplateEl
     }, ad);
+  }
+
+  function onFormSubmitLoad() {
+    if (!window.utils.isEmpty(resetForm)) {
+      resetForm();
+    }
   }
 
   function onError(errorMessage) {

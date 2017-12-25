@@ -64,7 +64,7 @@
     for (var i = 0; i < count; i++) {
       var userId = window.utils.pullRandomElement(userIdRange);
       var titleIndex = window.utils.pullRandomElement(titleIndexRange);
-      ads[i] = generateAd(i, userId, titleIndex);
+      ads.push(generateAd(i, userId, titleIndex));
     }
     return ads;
   };
@@ -102,7 +102,7 @@
 
   function getUserAvatarUrl(userId) {
     if (isNaN(userId) || userId < MIN_USER_ID || userId > MAX_USER_ID) {
-      return null;
+      throw new Error('Invalid userId ' + userId);
     }
     userId = userId < 10 ? '0' + userId : userId;
     return 'img/avatars/user' + userId + '.png';
@@ -146,7 +146,7 @@
     var featuresIndexRange = window.utils.getRange(0, featuresCount - 1);
     for (var i = 0; i < featuresCount; i++) {
       var featureIndex = window.utils.pullRandomElement(featuresIndexRange);
-      features[i] = FEATURES[featureIndex];
+      features.push(FEATURES[featureIndex]);
     }
     return features.sort();
   }
