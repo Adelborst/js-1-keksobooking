@@ -1,8 +1,8 @@
 'use strict';
 
 (function () {
-  var LOAD_URL = 'https://1510.dump.academy/keksobooking/data';
-  var SAVE_URL = 'https://1510.dump.academy/keksobooking';
+  var LOAD_URL = 'https://js.dump.academy/keksobooking/data';
+  var SAVE_URL = 'https://js.dump.academy/keksobooking';
   var STATUS_OK = 200;
 
   function load(onLoad, onError) {
