@@ -1,7 +1,6 @@
 {
   "name": "keksobooking",
   "version": "1.0.0",
-  "private": true,
   "description": "Личный проект «Кексобукинг» от HTML Academy",
   "author": "Михаил Овчинников",
   "repository": {
@@ -13,12 +12,14 @@
   },
   "devDependencies": {
     "eslint": "4.2.0",
-    "eslint-config-htmlacademy": "0.3.x"
+    "eslint-config-htmlacademy": "0.3.x",
+    "gh-pages": "2.0.1"
   },
   "license": "MIT",
   "dependencies": {},
   "scripts": {
-    "test": "eslint js/"
+    "test": "eslint js/",
+    "deploy": "gh-pages -d . -s {*.html,css/**/*.css,js/**/*.js,fonts/**/*.{woff,woff2},img/**/*.{jpg,png}}"
   },
   "engines": {
     "node": "^6.10"
